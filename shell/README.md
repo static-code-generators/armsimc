@@ -1,4 +1,4 @@
-# Shell for ARM C Simulator
+# Shell for ARM C Simulator (armcsh)
 
 The purpose of the shell is to provide the user with commands to control the execution of the simulator.
 The shell accepts one or more program files as command line arguments and loads them into the memory
