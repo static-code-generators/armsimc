@@ -1,4 +1,4 @@
-OBJS = shellcmds.o
+OBJS = shellcmds.o sim.o
 CC = clang
 CFLAGS = -O2 -std=c99
 exec = armsh
@@ -14,6 +14,6 @@ $(OBJS): %.o: %.h
 # because clean and all aren't filenames
 .PHONY: clean all
 
+# using -f option to supress file not found errors with rm
 clean:
-	# using -f option to supress file not found errors with rm
 	-rm -f $(OBJS) $(execobj) $(exec)
