@@ -23,7 +23,6 @@ void exec(struct CmdContext *ctx)
     if (ctx->argc == 0) {
         return;
     }
-    printf("Executing %s with arg1 %s argc %d\n", ctx->args[0], ctx->args[1], ctx->argc);
 }
 
 int parse_and_exec(char *cmdstr)
