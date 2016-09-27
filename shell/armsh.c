@@ -21,7 +21,7 @@ void parse(struct CmdContext *ctx, char *cmdstr)
 
 void exec(struct CmdContext *ctx)
 {
-    char * argerrstr = "Error: Argument Error, refer to `?` or `help`";
+    char * argerrstr = "Error: Argument Error, refer to `?` or `help`\n";
     if (ctx->argc == 0) {
         return;
     }
@@ -76,7 +76,7 @@ void exec(struct CmdContext *ctx)
     } else if (strcmp(cmd, "q") == 0 || strcmp(cmd, "quit") == 0) {
         exit(EXIT_SUCCESS);
     } else {
-        fprintf(stderr, "Error: Unknown command, refer to `?` or `help`");
+        fprintf(stderr, "Error: Unknown command, refer to `?` or `help`\n");
     }
 }
 

@@ -1,4 +1,4 @@
-OBJS =
+OBJS = shellcmds.o
 CC = clang
 CFLAGS = -O2 -std=c99
 exec = armsh
