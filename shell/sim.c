@@ -8,7 +8,8 @@ struct CPUState {
 	uint32_t CPSR; ///> Current Program Status Register
 };
 
-/* We are not implementing stack ops right now */
+// We are not implementing stack ops right now
+// The values below have been chosen arbitrarily
 #define MEM_TEXT_START 0x00000000
 #define MEM_TEXT_SIZE  0x00100000
 #define MEM_DATA_START 0x20000000
@@ -32,6 +33,7 @@ struct MemoryRegion mem_region[NB_REGIONS] = {
 	{MEM_DATA_START, MEM_DATA_SIZE, NULL},
 };
 
+/** Allocate memory for memory. */
 static void mem_init()
 {
 	int i;
@@ -40,10 +42,11 @@ static void mem_init()
 	}
 }
 
+/** Reset PC and set other registers to 0 */
 static void reset_cpu()
 {
 	int i;
-	cpu_state.CPSR = 0x0;
+	cpu_state.CPSR = 0x00;
 	for (i = 0; i < NB_REGS; i++) {
 		cpu_state.regs[i] = 0x00;	
 	}

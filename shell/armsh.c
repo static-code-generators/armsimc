@@ -9,6 +9,7 @@ struct CmdContext {
     char *args[20];
 };
 
+/** Parses a string read from shell into CmdContext. */
 void parse(struct CmdContext *ctx, char *cmdstr)
 {
     char *tok;
@@ -19,8 +20,10 @@ void parse(struct CmdContext *ctx, char *cmdstr)
     }
 }
 
+/** Calls the relevant functions from shellcmds module. */
 void exec(struct CmdContext *ctx)
 {
+#define ASSERT_ARG_COUNT(x) if (ctx->argc < x) { fprintf(stderr, "%s", argerrstr); return; }
     char * argerrstr = "Error: Argument Error, refer to `?` or `help`\n";
     if (ctx->argc == 0) {
         return;
@@ -29,17 +32,11 @@ void exec(struct CmdContext *ctx)
     if (strcmp(cmd, "r") == 0 || strcmp(cmd, "run") == 0) {
         cmd_run();
     } else if (strcmp(cmd, "file") == 0) {
-        if (ctx->argc < 2) {
-            fprintf(stderr, "%s", argerrstr);
-            return;
-        }
+        ASSERT_ARG_COUNT(2);
         char *fname = ctx->args[1];
         cmd_file(fname);
     } else if (strcmp(cmd, "step") == 0) {
-        if (ctx->argc < 1) {
-            fprintf(stderr, "%s", argerrstr);
-            return;
-        }
+        ASSERT_ARG_COUNT(1);
         int i;
         if (ctx->argc >= 2) {
             i = atoi(ctx->args[1]);
@@ -48,10 +45,7 @@ void exec(struct CmdContext *ctx)
         }
         cmd_step(i);
     } else if (strcmp(cmd, "mdump") == 0) {
-        if (ctx->argc < 3) {
-            fprintf(stderr, "%s", argerrstr);
-            return;
-        }
+        ASSERT_ARG_COUNT(3);
         int l = atoi(ctx->args[1]), h = atoi(ctx->args[2]);
         char * fname = NULL;
         if (ctx->argc >= 4) {
@@ -65,10 +59,7 @@ void exec(struct CmdContext *ctx)
         }
         cmd_rdump(fname);
     } else if (strcmp(cmd, "set") == 0) {
-        if (ctx->argc < 3) {
-            fprintf(stderr, "%s", argerrstr);
-            return;
-        }
+        ASSERT_ARG_COUNT(3);
         int rnum = atoi(ctx->args[1]), rval = atoi(ctx->args[2]);
         cmd_set(rnum, rval);
     } else if (strcmp(cmd, "?") == 0 || strcmp(cmd, "help") == 0) {
@@ -80,11 +71,12 @@ void exec(struct CmdContext *ctx)
     }
 }
 
+/** Parses and executes the line read from shell. */
 int parse_and_exec(char *cmdstr)
 {
     struct CmdContext *ctx = malloc(sizeof(struct CmdContext));
     if (!ctx) {
-        return -ENOMEM;
+        return EXIT_FAILURE;
     }
 
     parse(ctx, cmdstr);
