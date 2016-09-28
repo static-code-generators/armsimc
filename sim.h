@@ -4,8 +4,8 @@
 #define NB_REGS 16
 
 struct CPUState {
-	uint32_t regs[NB_REGS]; ///> Register File
-	uint32_t CPSR; ///> Current Program Status Register
+    uint32_t regs[NB_REGS]; ///> Register File
+    uint32_t CPSR; ///> Current Program Status Register
 };
 
 // We are not implementing stack ops right now
@@ -20,9 +20,9 @@ struct CPUState {
 #define MEM_DATA 1
 
 struct MemoryRegion {
-	uint32_t start;
-	uint32_t size;
-	uint8_t *mem;
+    uint32_t start;
+    uint32_t size;
+    uint8_t *mem;
 };
 
 void initialize();

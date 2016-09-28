@@ -8,30 +8,30 @@
 /* Global state variables */
 struct CPUState state_current, state_next;
 struct MemoryRegion mem_region[NB_REGIONS] = {
-	{MEM_TEXT_START, MEM_TEXT_SIZE, NULL},
-	{MEM_DATA_START, MEM_DATA_SIZE, NULL},
+    {MEM_TEXT_START, MEM_TEXT_SIZE, NULL},
+    {MEM_DATA_START, MEM_DATA_SIZE, NULL},
 };
 
 /** Allocate memory, initialze CPU states */
 void initialize()
 {
-	int i;
+    int i;
     reset_cpu();
-	for (i = 0; i < NB_REGIONS; i++) {
-		mem_region[i].mem = malloc(sizeof(uint8_t) * mem_region[i].size);
+    for (i = 0; i < NB_REGIONS; i++) {
+        mem_region[i].mem = malloc(sizeof(uint8_t) * mem_region[i].size);
         memset(mem_region[i].mem, 0, sizeof(uint8_t) * mem_region[i].size);
-	}
+    }
     state_next = state_current;
 }
 
 /** Set all registers to 0 */
 void reset_cpu()
 {
-	int i;
-	state_current.CPSR = 0x00;
-	for (i = 0; i < NB_REGS; i++) {
-		state_current.regs[i] = 0x00;
-	}
+    int i;
+    state_current.CPSR = 0x00;
+    for (i = 0; i < NB_REGS; i++) {
+        state_current.regs[i] = 0x00;
+    }
 }
 
 /** Find memory region of an address */
