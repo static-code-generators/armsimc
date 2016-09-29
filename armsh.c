@@ -9,6 +9,13 @@ struct CmdContext {
     char *args[20];
 };
 
+/** strdup isn't in c99 std, though in POSIX, so ftfy i make my own */
+char * strdup(const char *str) {
+    char *newstr = malloc(sizeof(char) * strlen(str));
+    strcpy(newstr, str);
+    return newstr;
+}
+
 /** Parses a string read from shell into CmdContext. */
 void parse(struct CmdContext *ctx, char *cmdstr)
 {
