@@ -51,7 +51,10 @@ static void mem_write_32(uint32_t address, uint32_t data)
     struct MemoryRegion *region = find_mem_region(address);
     assert(region != NULL);
     uint32_t offset = address - region->start;
-    *((uint32_t *) (region->mem + offset)) = data;
+    region->mem[offset+0] = (data >> 24) & 0xFF;
+    region->mem[offset+1] = (data >> 16) & 0xFF;
+    region->mem[offset+2] = (data >>  8) & 0xFF;
+    region->mem[offset+3] = (data >>  0) & 0xFF;
 }
 
 /** Read 32-bit data from address (Big-Endian) */
@@ -60,8 +63,11 @@ static uint32_t mem_read_32(uint32_t address)
     struct MemoryRegion *region = find_mem_region(address);
     assert(region != NULL);
     uint32_t offset = address - region->start;
-    uint32_t data = *((uint32_t *) (region->mem + offset));
-    return data;
+    return
+        (region->mem[offset+0] << 24) |
+        (region->mem[offset+1] << 16) |
+        (region->mem[offset+2] <<  8) |
+        (region->mem[offset+3] <<  0);
 }
 
 /** Load program into memory */
