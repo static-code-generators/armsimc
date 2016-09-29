@@ -96,7 +96,9 @@ int shell_loop()
     int ret;
     while (1) {
         printf("armsh> ");
-        fgets(cmdstr, 100, stdin);
+        if (fgets(cmdstr, 100, stdin) == NULL) {
+            return EXIT_SUCCESS;
+        }
         if ((ret = parse_and_exec(cmdstr)) < 0) { 
             return ret;
         }
