@@ -1,9 +1,9 @@
 IDIR = include
 BUILD = build
 # we want to place all objects in object directory.
-OBJS = $(addprefix $(BUILD)/, shellcmds.o sim.o)
+OBJS = $(addprefix $(BUILD)/, shellcmds.o sim.o isa.o)
 CC = clang
-CFLAGS = -O2 -std=c99 -I $(IDIR)
+override CFLAGS += -O2 -std=c99 -I $(IDIR)
 exec = $(BUILD)/armsh
 execobj = $(exec).o
 
