@@ -1,7 +1,12 @@
 #ifndef SIM_H
 #define SIM_H
 
+#include <stdint.h>
+#include <stdio.h>
+
 #define NB_REGS 16
+
+#define PC 15
 
 struct CPUState {
     uint32_t regs[NB_REGS]; ///> Register File
@@ -25,8 +30,17 @@ struct MemoryRegion {
     uint8_t *mem;
 };
 
+/** Allocate memory, initialize CPU states */
 void initialize();
-void load_program(FILE *code);
+/** Set all registers to 0 */
 void reset_cpu();
+/** Load program into memory */
+void load_program(FILE *code);
+/** Write 32-bit data to address (Big-Endian) */
+void mem_write_32(uint32_t address, uint32_t data);
+/** Read 32-bit data from address (Big-Endian) */
+uint32_t mem_read_32(uint32_t address);
+/** Execute CPU cycle */
+void cpu_cycle();
 
 #endif

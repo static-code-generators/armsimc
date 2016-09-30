@@ -4,15 +4,15 @@
 #include <string.h>
 #include <assert.h>
 #include "sim.h"
+#include "isa.h"
 
-/* Global state variables */
-struct CPUState state_current, state_next;
-struct MemoryRegion mem_region[NB_REGIONS] = {
+static struct CPUState cpu_state;
+
+static struct MemoryRegion mem_region[NB_REGIONS] = {
     {MEM_TEXT_START, MEM_TEXT_SIZE, NULL},
     {MEM_DATA_START, MEM_DATA_SIZE, NULL},
 };
 
-/** Allocate memory, initialze CPU states */
 void initialize()
 {
     int i;
@@ -21,17 +21,16 @@ void initialize()
         mem_region[i].mem = malloc(sizeof(uint8_t) * mem_region[i].size);
         memset(mem_region[i].mem, 0, sizeof(uint8_t) * mem_region[i].size);
     }
-    state_next = state_current;
 }
 
-/** Set all registers to 0 */
 void reset_cpu()
 {
     int i;
-    state_current.CPSR = 0x00;
+    cpu_state.CPSR = 0x00;
     for (i = 0; i < NB_REGS; i++) {
-        state_current.regs[i] = 0x00;
+        cpu_state.regs[i] = 0x00;
     }
+    cpu_state.regs[PC] = mem_region[MEM_TEXT].start;
 }
 
 /** Find memory region of an address */
@@ -45,8 +44,7 @@ static struct MemoryRegion * find_mem_region(uint32_t address) {
     return NULL;
 }
 
-/** Write 32-bit data to address (Big-Endian) */
-static void mem_write_32(uint32_t address, uint32_t data)
+void mem_write_32(uint32_t address, uint32_t data)
 {
     struct MemoryRegion *region = find_mem_region(address);
     assert(region != NULL);
@@ -57,8 +55,7 @@ static void mem_write_32(uint32_t address, uint32_t data)
     region->mem[offset+3] = (data >>  0) & 0xFF;
 }
 
-/** Read 32-bit data from address (Big-Endian) */
-static uint32_t mem_read_32(uint32_t address)
+uint32_t mem_read_32(uint32_t address)
 {
     struct MemoryRegion *region = find_mem_region(address);
     assert(region != NULL);
@@ -70,13 +67,17 @@ static uint32_t mem_read_32(uint32_t address)
         (region->mem[offset+3] <<  0);
 }
 
-/** Load program into memory */
-void load_program(FILE *code)
+void load_program(FILE *fp)
 {
-    uint32_t word;
-    int i = 0;
-    while (fscanf(code, "%x\n", &word) != EOF) {
-        mem_write_32(MEM_TEXT_START + i, word);
-        i += 4;
+    uint32_t instruction;
+    uint32_t addr = mem_region[MEM_TEXT].start;
+    while (fscanf(fp, "%x\n", &instruction) != EOF) {
+        mem_write_32(addr, instruction);
+        addr += 4;
     }
+}
+
+void cpu_cycle()
+{
+    cpu_state = process_instruction(cpu_state);
 }
