@@ -11,6 +11,7 @@
 struct CPUState {
     uint32_t regs[NB_REGS]; ///> Register File
     uint32_t CPSR; ///> Current Program Status Register
+    uint8_t halted; ///> 1 if halted, 0 if running
 };
 
 // We are not implementing stack ops right now
@@ -40,7 +41,9 @@ void load_program(FILE *code);
 void mem_write_32(uint32_t address, uint32_t data);
 /** Read 32-bit data from address (Big-Endian) */
 uint32_t mem_read_32(uint32_t address);
-/** Execute CPU cycle */
-void cpu_cycle();
+/** Execute CPU cycle.
+ * \return 0 for success, -1 for halted
+ */
+int cpu_cycle();
 
 #endif

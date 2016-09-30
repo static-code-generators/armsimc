@@ -31,6 +31,7 @@ void reset_cpu()
         cpu_state.regs[i] = 0x00;
     }
     cpu_state.regs[PC] = mem_region[MEM_TEXT].start;
+    cpu_state.halted = 0;
 }
 
 /** Find memory region of an address */
@@ -77,7 +78,10 @@ void load_program(FILE *fp)
     }
 }
 
-void cpu_cycle()
+int cpu_cycle()
 {
-    cpu_state = process_instruction(cpu_state);
+    if (!cpu_state.halted) {
+        cpu_state = process_instruction(cpu_state);
+    }
+    return -cpu_state.halted;
 }
