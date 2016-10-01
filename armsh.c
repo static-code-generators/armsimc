@@ -31,8 +31,8 @@ void parse(struct CmdContext *ctx, char *cmdstr)
 /** Calls the relevant functions from shellcmds module. */
 void exec(struct CmdContext *ctx)
 {
-#define ASSERT_ARG_COUNT(x) if (ctx->argc < x) { fprintf(stderr, "%s", argerrstr); return; }
     char * argerrstr = "Error: Argument Error, refer to `?` or `help`\n";
+#define CHECK_ARGC_ELSE_RETURN(x) if (ctx->argc < x) { fprintf(stderr, "%s", argerrstr); return; }
     if (ctx->argc == 0) {
         return;
     }
@@ -40,11 +40,11 @@ void exec(struct CmdContext *ctx)
     if (strcmp(cmd, "r") == 0 || strcmp(cmd, "run") == 0) {
         cmd_run();
     } else if (strcmp(cmd, "file") == 0) {
-        ASSERT_ARG_COUNT(2);
+        CHECK_ARGC_ELSE_RETURN(2);
         char *fname = ctx->args[1];
         cmd_file(fname);
     } else if (strcmp(cmd, "step") == 0) {
-        ASSERT_ARG_COUNT(1);
+        CHECK_ARGC_ELSE_RETURN(1);
         int i;
         if (ctx->argc >= 2) {
             i = atoi(ctx->args[1]);
@@ -53,7 +53,7 @@ void exec(struct CmdContext *ctx)
         }
         cmd_step(i);
     } else if (strcmp(cmd, "mdump") == 0) {
-        ASSERT_ARG_COUNT(3);
+        CHECK_ARGC_ELSE_RETURN(3);
         uint32_t l, h;
         sscanf(ctx->args[1], "0x%x", &l);
         sscanf(ctx->args[2], "0x%x", &h);
@@ -69,7 +69,7 @@ void exec(struct CmdContext *ctx)
         }
         cmd_rdump(fname);
     } else if (strcmp(cmd, "set") == 0) {
-        ASSERT_ARG_COUNT(3);
+        CHECK_ARGC_ELSE_RETURN(3);
         int rnum = atoi(ctx->args[1]), rval = atoi(ctx->args[2]);
         cmd_set(rnum, rval);
     } else if (strcmp(cmd, "?") == 0 || strcmp(cmd, "help") == 0) {
@@ -79,6 +79,7 @@ void exec(struct CmdContext *ctx)
     } else {
         fprintf(stderr, "Error: Unknown command, refer to `?` or `help`\n");
     }
+#undef CHECK_ARGC_ELSE_RETURN
 }
 
 /** Parses and executes the line read from shell. */
