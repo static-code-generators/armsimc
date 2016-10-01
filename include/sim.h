@@ -45,5 +45,7 @@ uint32_t mem_read_32(uint32_t address);
  * \return 0 for success, -1 for halted
  */
 int cpu_cycle();
+/** Return current cpu state */
+struct CPUState get_cpu_state();
 
 #endif

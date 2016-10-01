@@ -85,3 +85,8 @@ int cpu_cycle()
     }
     return -cpu_state.halted;
 }
+
+struct CPUState get_cpu_state()
+{
+    return cpu_state;
+}

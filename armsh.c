@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <errno.h>
 #include "shellcmds.h"
 
@@ -53,7 +54,9 @@ void exec(struct CmdContext *ctx)
         cmd_step(i);
     } else if (strcmp(cmd, "mdump") == 0) {
         ASSERT_ARG_COUNT(3);
-        int l = atoi(ctx->args[1]), h = atoi(ctx->args[2]);
+        uint32_t l, h;
+        sscanf(ctx->args[1], "0x%x", &l);
+        sscanf(ctx->args[2], "0x%x", &h);
         char * fname = NULL;
         if (ctx->argc >= 4) {
             fname = ctx->args[3];
