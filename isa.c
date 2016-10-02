@@ -92,7 +92,10 @@ bool condition_check(uint8_t cond)
 	{
 		return true;
 	}
-
+	else
+	{
+		return false;
+	}
 }
 
 struct CPUState process_instruction(struct CPUState state)
