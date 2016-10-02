@@ -26,6 +26,7 @@ struct ShifterOperand {
  */
 static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction);
 uint32_t rotate_right(uint32_t shiftee, uint8_t shifter);
+uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter);
 uint8_t get_bit(uint32_t from, uint8_t bitid);
 
 #define CPSR_N 31

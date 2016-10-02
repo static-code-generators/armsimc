@@ -237,7 +237,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
                             retval->shifter_operand = 0xFFFFFFFF;
                         }
                     } else {
-                        retval->shifter_operand = Rm >> shift_imm;
+                        retval->shifter_operand = arithmetic_right_shift(Rm, shift_imm);
                         retval->shifter_carry = get_bit(Rm, shift_imm - 1);
                     }
                     break;
@@ -247,7 +247,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
                     uint8_t reg_id = (instruction >> 8) & 0xF; //bits 11-8.
                     uint8_t shift = state.regs[reg_id]; //take bits 7-0 of reg_id.
                     if (shift <= 32) {
-                        retval->shifter_operand = Rm >> shift;
+                        retval->shifter_operand = arithmetic_right_shift(Rm, shift);
                         if (shift == 0) {
                             retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
                         } else {
@@ -295,4 +295,12 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
     }
     return retval;
 #undef I_BIT
+}
+
+uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
+{
+#define SIGN_BIT 31
+    uint32_t sign_bit = get_bit(shiftee, SIGN_BIT);
+    return (shiftee >> shifter) | (sign_bit << SIGN_BIT);
+#undef SIGN_BIT
 }
