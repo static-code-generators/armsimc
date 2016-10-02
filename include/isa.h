@@ -10,9 +10,9 @@
  */
 struct CPUState process_instruction(struct CPUState state);
 
-#define N 31
-#define Z 30
-#define C 29
-#define V 28
+#define CPSR_N 31
+#define CPSR_Z 30
+#define CPSR_C 29
+#define CPSR_V 28
 
 #endif
