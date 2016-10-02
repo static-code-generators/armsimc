@@ -14,87 +14,118 @@ static struct CPUState next_state, curr_state;
 
 bool condition_check(uint8_t cond)
 {
-	if(cond == 0x00)	//EQ
-	{
-		return (curr_state.CPSR & (1 << Z));
-	}
-	else if(cond == 0x01) 	//NE
-	{
-		return (!(curr_state.CPSR & (1 << Z)));
-	}
-	else if(cond == 0x02)	//CS/HS
-	{
-		return (curr_state.CPSR & (1 << C));
-	}
-	else if(cond == 0x03)	//CC/LO
-	{
-		return (!(curr_state.CPSR & (1 << C)));
-	}
-	else if(cond == 0x04)	//MI
-	{
-		return (curr_state.CPSR & (1 << N));
-	}
-	else if(cond == 0x05)	//PL
-	{
-		return (!(curr_state.CPSR & (1 << N)));
-	}
-	else if(cond == 0x06)	//VS
-	{
-		return (curr_state.CPSR & (1 << V));	
-	}
-	else if(cond == 0x07)	//VC
-	{
-		return (!(curr_state.CPSR & (1 << V)));
-	}
-	else if(cond == 0x08)	//HI
-	{
-		return ( 
-			(curr_state.CPSR & (1 << C)) && 
-			!(curr_state.CPSR & (1 << Z)) 
-		);
-	}
-	else if(cond == 0x09)	//LS
-	{
-		return ( 
-			!(curr_state.CPSR & (1 << C)) || 
-			(curr_state.CPSR & (1 << Z)) 
-		);
-	}
-	else if(cond == 0x0A)	//GE
-	{
-		return ( 
-			((curr_state.CPSR & (1 << N)) && (curr_state.CPSR & (1 << V))) || 
-			(!(curr_state.CPSR & (1 << N)) && !(curr_state.CPSR & (1 << V)))
-		);
-	}
-	else if(cond == 0x0B)	//LT
-	{
-		return ( 
-			(!(curr_state.CPSR & (1 << N)) && (curr_state.CPSR & (1 << V))) || 
-			((curr_state.CPSR & (1 << N)) && !(curr_state.CPSR & (1 << V)))
-		);
-	}
-	else if(cond == 0x0C)	//GT
-	{
-		return ( 
-			( !(curr_state.CPSR & (1 << Z)) ) && 
-			( ( (curr_state.CPSR & (1 << N)) && (curr_state.CPSR & (1 << V)) ) || ( !(curr_state.CPSR & (1 << N)) && !(curr_state.CPSR & (1 << V)) ) )
-		);
-	}
-	else if(cond == 0x0D)	//LE
-	{
-		return ( 
-			( (curr_state.CPSR & (1 << Z)) ) && 
-			( ( !(curr_state.CPSR & (1 << N)) && (curr_state.CPSR & (1 << V)) ) || ( (curr_state.CPSR & (1 << N)) && !(curr_state.CPSR & (1 << V)) ) )
-		);
-	}
-	else if(cond == 0x0E)	//AL
-	{
-		return true;
-	}
-	else
-	{
-		return false;
+	enum Condition {
+		EQ = 0x00,
+		NE = 0x01,
+		CS = 0x02,
+		CC = 0x03,
+		MI = 0x04,
+		PL = 0x05,
+		VS = 0x06,
+		VC = 0x07,
+		HI = 0x08,
+		LS = 0x09,
+		GE = 0x0A,
+		LT = 0x0B,
+		GT = 0x0C,
+		LE = 0x0D,
+		AL = 0x0E
+	};
+
+	switch(cond){
+		case EQ: 
+		{
+			return (curr_state.CPSR & (1 << CPSR_Z));
+			break;
+		}
+		case NE: 
+		{
+			return (!(curr_state.CPSR & (1 << CPSR_Z)));
+			break;
+		}
+		case CS: 
+		{
+			return (curr_state.CPSR & (1 << CPSR_C));
+			break;
+		}
+		case CC: 
+		{
+			return (!(curr_state.CPSR & (1 << CPSR_C)));
+			break;
+		}
+		case MI: 
+		{
+			return (curr_state.CPSR & (1 << CPSR_N));
+			break;
+		}case PL: 
+		{
+			return (!(curr_state.CPSR & (1 << CPSR_N)));
+			break;
+		}
+		case VS: 
+		{
+			return (curr_state.CPSR & (1 << CPSR_V));
+			break;
+		}
+		case VC: 
+		{
+			return (!(curr_state.CPSR & (1 << CPSR_V)));
+			break;
+		}
+		case HI: 
+		{
+			return ( 
+				(curr_state.CPSR & (1 << CPSR_C)) && 
+				!(curr_state.CPSR & (1 << CPSR_Z)) 
+			);
+			break;
+		}
+		case LS: 
+		{
+			return ( 
+				!(curr_state.CPSR & (1 << CPSR_C)) || 
+				(curr_state.CPSR & (1 << CPSR_Z)) 
+			);
+			break;
+		}
+		case GE: 
+		{
+			return ( 
+				((curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
+				(!(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
+			);
+			break;
+		}
+		case LT: 
+		{
+			return ( 
+				(!(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
+				((curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
+			);
+			break;
+		}
+		case GT: 
+		{
+			return ( 
+				( !(curr_state.CPSR & (1 << CPSR_Z)) ) && 
+				( ( (curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( !(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
+			);
+			break;
+		}
+		case LE: 
+		{
+			return ( 
+				( (curr_state.CPSR & (1 << CPSR_Z)) ) && 
+				( ( !(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( (curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
+			);
+			break;
+		}
+		case AL: 
+		{
+			return true;
+			break;
+		}
+		default: return false;
 	}
 }
 
