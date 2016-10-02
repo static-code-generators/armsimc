@@ -178,7 +178,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
         switch (s_type) {
             case LSLIMM :
                 {
-                    uint8_t shift_imm = (instruction >> 7) & 0x2F; //bits 11-7
+                    uint8_t shift_imm = (instruction >> 7) & 0x1F; //bits 11-7
                     retval->shifter_operand = Rm << shift_imm;
                     if (shift_imm == 0) {
                         retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
@@ -203,7 +203,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
                 }
             case LSRIMM:
                 {
-                    uint8_t shift_imm = (instruction >> 7) & 0x2F; //bits 11-7
+                    uint8_t shift_imm = (instruction >> 7) & 0x1F; //bits 11-7
                     retval->shifter_operand = Rm >> shift_imm;
                     if (shift_imm == 0) {
                         retval->shifter_carry = get_bit(Rm, 31);
@@ -228,7 +228,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
                 }
             case ASRIMM:
                 {
-                    uint8_t shift_imm = (instruction >> 7) & 0x2F; //bits 11-7
+                    uint8_t shift_imm = (instruction >> 7) & 0x1F; //bits 11-7
                     if (shift_imm == 0) {
                         retval->shifter_carry = get_bit(Rm, 31);
                         if (get_bit(Rm, 31) == 0) {
@@ -265,7 +265,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
                 }
             case RORIMM:
                 {
-                    uint8_t shift_imm = (instruction >> 7) & 0x2F; //bits 11-7
+                    uint8_t shift_imm = (instruction >> 7) & 0x1F; //bits 11-7
                     if (shift_imm == 0) { //rotate right with extend.
                         retval->shifter_operand = (Rm >> 1) | ((uint32_t)get_bit(state.CPSR, CPSR_C) << 31);
                         retval->shifter_carry = get_bit(Rm, 0);
