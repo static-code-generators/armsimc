@@ -7,6 +7,7 @@
 #define NB_REGS 16
 
 #define PC 15
+#define CFLAG 29
 
 struct CPUState {
     uint32_t regs[NB_REGS]; ///> Register File
