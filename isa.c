@@ -147,7 +147,7 @@ uint8_t get_bit(uint32_t from, uint8_t bitid)
     return (from >> bitid) & 1;
 }
 
-struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
+static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
 {
 #define I_BIT 25
     struct ShifterOperand *retval = malloc(sizeof(struct ShifterOperand));
