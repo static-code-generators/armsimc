@@ -301,6 +301,20 @@ uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
 {
 #define SIGN_BIT 31
     uint32_t sign_bit = get_bit(shiftee, SIGN_BIT);
-    return (shiftee >> shifter) | (sign_bit << SIGN_BIT);
+    if (sign_bit == 0) { //just ordinary right shifting
+        return (shiftee >> shifter);
+    } else { //shift in 1s on the left.
+        const uint32_t one = 1;
+        //evil bitwise magic incoming.
+        return (shiftee >> shifter) | ~((one << (32 - shifter)) - 1);
+        //yah no this isn't that hard to understand
+        //so we take 1 and move it to the first new bit
+        //example if 1000`0000`0000`0001`1000`1111`1000`0011`
+        //was shifted to the right twice, the right most "new" bit 
+        //would be at index 32 - 2
+        //so we make mask like 0100`0000`0000`0000`0000`0000`0000`0000`
+        //subtract 1 like `0011`1111`1111`1111`1111`1111`1111`1111
+        //take complement et voila `1100`0000`0000`0000`0000`0000`0000`0000
+    }
 #undef SIGN_BIT
 }
