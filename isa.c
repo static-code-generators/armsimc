@@ -1,7 +1,6 @@
 #include "sim.h"
 #include "isa.h"
 
-
 /* Instructions to implement:
  * ADC ADD AND B BIC
  * BL CMN CMP EOR LDR
@@ -294,6 +293,109 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
         }
     }
     return retval;
+#undef I_BIT
+}
+
+/** Handle addr_mode and I, P, U, W operands.
+ * Refer to Section A5.2 in ARM manual.
+ * Note: This function might update Rn value in next_state
+ * depending upon pre/post indexed addressing.
+ * \param instruction 32-bit instruction
+ * \return 32-bit decoded address
+ */
+uint32_t ld_str_addr_mode(uint32_t instruction)
+{
+#define W_BIT 21
+#define U_BIT 23
+#define P_BIT 24
+#define I_BIT 25
+    enum ShifterType {
+        LSL = 0x00, // logical shift left
+        LSR = 0x01, // logical shift right
+        ASR = 0x10, // arithmetic shift right
+        ROR = 0x11, // rotate right (optionally with extend RRX)
+    } s_type;
+    uint32_t address;
+    uint32_t offset;
+    uint8_t rn_id = (instruction >> 16) & 0xf; // bits 19-16
+    int32_t rn_val = curr_state.regs[rn_id];
+
+    if (instruction & (1 << I_BIT)) { // Immediate offset
+        offset = instruction & 0x7ff; // bits 11-0
+    } else { // Register offset
+        uint8_t rm_id = instruction & 0xf; // bits 3-0
+        int32_t rm_val = curr_state.regs[rm_id];
+        uint8_t shift_imm = (instruction >> 7) & 0x1f; // bits 11-7
+        s_type = (instruction >> 5) & 0x3; // bits 6-5
+        switch (s_type) {
+            case LSL:
+            {
+                offset = rm_val << shift_imm; // this also covers unscaled case
+            }
+            case LSR:
+            {
+                if (shift_imm == 0) { // shift_imm is 32
+                    offset = 0;
+                } else {
+                    offset = ((uint32_t) rm_val) >> shift_imm;
+                }
+            }
+            case ASR:
+            {
+                if (shift_imm == 0) { // shift_imm is 32
+                    if (get_bit(rm_val, 31) == 1) {
+                        offset = 0xffffffff;
+                    } else {
+                        offset = 0;
+                    }
+                } else {
+                    offset = arithmetic_right_shift(rm_val, shift_imm);
+                }
+            }
+            case ROR:
+            {
+                if (shift_imm == 0) { // RRX rotate right with extend
+                    offset = (((uint32_t) get_bit(curr_state.CPSR, CPSR_C)) << 31) |
+                             (((uint32_t) rm_val) >> 1);
+                } else {
+                    offset = rotate_right(rm_val, shift_imm);
+                }
+            }
+        }
+    }
+
+    if (instruction & (1 << U_BIT)) {
+        address = rn_val + offset;
+    } else {
+        address = rn_val - offset;
+    }
+
+    uint32_t ret_val;
+
+    const uint8_t P = get_bit(instruction, P_BIT), W = get_bit(instruction, W_BIT);
+
+    if (!P && !W) { // post-indexed
+        ret_val = rn_val;
+        if (condition_check((uint8_t) (instruction >> 28))) {
+            next_state.regs[rn_id] = address;
+        }
+    } else if (!P && W) { // user mode access, we are not implementing this
+        next_state.halted = 1;
+        ret_val = address;
+    } else if (P && !W) { // normal
+        ret_val = address;
+    } else { // (P = 1, W = 1) pre-indexed
+        ret_val = address;
+        if (condition_check((uint8_t) (instruction >> 28))) {
+            next_state.regs[rn_id] = address;
+        }
+    }
+
+    return ret_val;
+
+#undef W_BIT
+#undef U_BIT
+#undef P_BIT
 #undef I_BIT
 }
 
