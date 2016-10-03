@@ -11,122 +11,6 @@
 
 static struct CPUState next_state, curr_state;
 
-bool condition_check(uint8_t cond)
-{
-    enum Condition {
-        EQ = 0x00,
-        NE = 0x01,
-        CS = 0x02,
-        CC = 0x03,
-        MI = 0x04,
-        PL = 0x05,
-        VS = 0x06,
-        VC = 0x07,
-        HI = 0x08,
-        LS = 0x09,
-        GE = 0x0A,
-        LT = 0x0B,
-        GT = 0x0C,
-        LE = 0x0D,
-        AL = 0x0E
-    };
-
-    switch(cond){
-        case EQ: 
-            {
-                return (curr_state.CPSR & (1 << CPSR_Z));
-                break;
-            }
-        case NE: 
-            {
-                return (!(curr_state.CPSR & (1 << CPSR_Z)));
-                break;
-            }
-        case CS: 
-            {
-                return (curr_state.CPSR & (1 << CPSR_C));
-                break;
-            }
-        case CC: 
-            {
-                return (!(curr_state.CPSR & (1 << CPSR_C)));
-                break;
-            }
-        case MI: 
-            {
-                return (curr_state.CPSR & (1 << CPSR_N));
-                break;
-            }case PL: 
-            {
-                return (!(curr_state.CPSR & (1 << CPSR_N)));
-                break;
-            }
-        case VS: 
-            {
-                return (curr_state.CPSR & (1 << CPSR_V));
-                break;
-            }
-        case VC: 
-            {
-                return (!(curr_state.CPSR & (1 << CPSR_V)));
-                break;
-            }
-        case HI: 
-            {
-                return ( 
-                        (curr_state.CPSR & (1 << CPSR_C)) && 
-                        !(curr_state.CPSR & (1 << CPSR_Z)) 
-                       );
-                break;
-            }
-        case LS: 
-            {
-                return ( 
-                        !(curr_state.CPSR & (1 << CPSR_C)) || 
-                        (curr_state.CPSR & (1 << CPSR_Z)) 
-                       );
-                break;
-            }
-        case GE: 
-            {
-                return ( 
-                        ((curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
-                        (!(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
-                       );
-                break;
-            }
-        case LT: 
-            {
-                return ( 
-                        (!(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
-                        ((curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
-                       );
-                break;
-            }
-        case GT: 
-            {
-                return ( 
-                        ( !(curr_state.CPSR & (1 << CPSR_Z)) ) && 
-                        ( ( (curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( !(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
-                       );
-                break;
-            }
-        case LE: 
-            {
-                return ( 
-                        ( (curr_state.CPSR & (1 << CPSR_Z)) ) && 
-                        ( ( !(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( (curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
-                       );
-                break;
-            }
-        case AL: 
-            {
-                return true;
-                break;
-            }
-        default: return false;
-    }
-}
 
 struct CPUState process_instruction(struct CPUState state)
 {
@@ -136,12 +20,12 @@ struct CPUState process_instruction(struct CPUState state)
     return next_state;
 }
 
-uint32_t rotate_right(uint32_t shiftee, uint8_t shifter)
+static uint32_t rotate_right(uint32_t shiftee, uint8_t shifter)
 {
     return (shiftee << (32 - shifter)) | (shiftee >> (shifter));
 }
 
-uint8_t get_bit(uint32_t from, uint8_t bitid)
+static uint8_t get_bit(uint32_t from, uint8_t bitid)
 {
     return (from >> bitid) & 1;
 }
@@ -296,14 +180,7 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
 #undef I_BIT
 }
 
-/** Handle addr_mode and I, P, U, W operands.
- * Refer to Section A5.2 in ARM manual.
- * Note: This function might update Rn value in next_state
- * depending upon pre/post indexed addressing.
- * \param instruction 32-bit instruction
- * \return 32-bit decoded address
- */
-uint32_t ld_str_addr_mode(uint32_t instruction)
+static uint32_t ld_str_addr_mode(uint32_t instruction)
 {
 #define W_BIT 21
 #define U_BIT 23
@@ -399,7 +276,7 @@ uint32_t ld_str_addr_mode(uint32_t instruction)
 #undef I_BIT
 }
 
-uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
+static uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
 {
 #define SIGN_BIT 31
     uint32_t sign_bit = get_bit(shiftee, SIGN_BIT);
@@ -419,4 +296,121 @@ uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
         //take complement et voila `1100`0000`0000`0000`0000`0000`0000`0000
     }
 #undef SIGN_BIT
+}
+
+bool condition_check(uint8_t cond)
+{
+    enum Condition {
+        EQ = 0x00,
+        NE = 0x01,
+        CS = 0x02,
+        CC = 0x03,
+        MI = 0x04,
+        PL = 0x05,
+        VS = 0x06,
+        VC = 0x07,
+        HI = 0x08,
+        LS = 0x09,
+        GE = 0x0A,
+        LT = 0x0B,
+        GT = 0x0C,
+        LE = 0x0D,
+        AL = 0x0E
+    };
+
+    switch(cond){
+        case EQ: 
+            {
+                return (curr_state.CPSR & (1 << CPSR_Z));
+                break;
+            }
+        case NE: 
+            {
+                return (!(curr_state.CPSR & (1 << CPSR_Z)));
+                break;
+            }
+        case CS: 
+            {
+                return (curr_state.CPSR & (1 << CPSR_C));
+                break;
+            }
+        case CC: 
+            {
+                return (!(curr_state.CPSR & (1 << CPSR_C)));
+                break;
+            }
+        case MI: 
+            {
+                return (curr_state.CPSR & (1 << CPSR_N));
+                break;
+            }case PL: 
+            {
+                return (!(curr_state.CPSR & (1 << CPSR_N)));
+                break;
+            }
+        case VS: 
+            {
+                return (curr_state.CPSR & (1 << CPSR_V));
+                break;
+            }
+        case VC: 
+            {
+                return (!(curr_state.CPSR & (1 << CPSR_V)));
+                break;
+            }
+        case HI: 
+            {
+                return ( 
+                        (curr_state.CPSR & (1 << CPSR_C)) && 
+                        !(curr_state.CPSR & (1 << CPSR_Z)) 
+                       );
+                break;
+            }
+        case LS: 
+            {
+                return ( 
+                        !(curr_state.CPSR & (1 << CPSR_C)) || 
+                        (curr_state.CPSR & (1 << CPSR_Z)) 
+                       );
+                break;
+            }
+        case GE: 
+            {
+                return ( 
+                        ((curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
+                        (!(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
+                       );
+                break;
+            }
+        case LT: 
+            {
+                return ( 
+                        (!(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V))) || 
+                        ((curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)))
+                       );
+                break;
+            }
+        case GT: 
+            {
+                return ( 
+                        ( !(curr_state.CPSR & (1 << CPSR_Z)) ) && 
+                        ( ( (curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( !(curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
+                       );
+                break;
+            }
+        case LE: 
+            {
+                return ( 
+                        ( (curr_state.CPSR & (1 << CPSR_Z)) ) && 
+                        ( ( !(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( (curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
+                       );
+                break;
+            }
+        case AL: 
+            {
+                return true;
+                break;
+            }
+        default: return false;
+    }
 }
