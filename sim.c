@@ -45,6 +45,22 @@ static struct MemoryRegion * find_mem_region(uint32_t address) {
     return NULL;
 }
 
+void mem_write_8(uint32_t address, uint8_t data)
+{
+    struct MemoryRegion *region = find_mem_region(address);
+    assert(region != NULL);
+    uint32_t offset = address - region->start;
+    region->mem[offset] = data;
+}
+
+uint8_t mem_read_8(uint32_t address)
+{
+    struct MemoryRegion *region = find_mem_region(address);
+    assert(region != NULL);
+    uint32_t offset = address - region->start;
+    return region->mem[offset];
+}
+
 void mem_write_32(uint32_t address, uint32_t data)
 {
     struct MemoryRegion *region = find_mem_region(address);

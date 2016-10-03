@@ -19,7 +19,7 @@ struct CPUState {
 // The values below have been chosen arbitrarily
 #define MEM_TEXT_START 0x00000000
 #define MEM_TEXT_SIZE  0x00100000
-#define MEM_DATA_START 0x20000000
+#define MEM_DATA_START 0x10000000
 #define MEM_DATA_SIZE  0x00100000
 
 #define NB_REGIONS 2
@@ -42,6 +42,10 @@ void load_program(FILE *code);
 void mem_write_32(uint32_t address, uint32_t data);
 /** Read 32-bit data from address (Big-Endian) */
 uint32_t mem_read_32(uint32_t address);
+/** Write 8-bit data to address (don't care endianness) */
+void mem_write_8(uint32_t address, uint8_t data);
+/** Read 8-bit data from address (don't care endianness) */
+uint8_t mem_read_8(uint32_t address);
 /** Execute CPU cycle.
  * \return 0 for success, -1 for halted
  */
