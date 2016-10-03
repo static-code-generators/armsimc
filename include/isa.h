@@ -57,6 +57,6 @@ static uint32_t ld_str_addr_mode(uint32_t instruction);
  * \param cond bits 31-28 in instruction
  * \return boolean, true if execute current instruction
  */
-static bool condition_check(uint8_t cond)
+static bool condition_check(uint8_t cond);
 
 #endif
