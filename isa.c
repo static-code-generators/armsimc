@@ -202,6 +202,7 @@ static uint32_t ld_str_addr_mode(uint32_t instruction)
             case LSL:
             {
                 offset = rm_val << shift_imm; // this also covers unscaled case
+                break;
             }
             case LSR:
             {
@@ -210,6 +211,7 @@ static uint32_t ld_str_addr_mode(uint32_t instruction)
                 } else {
                     offset = ((uint32_t) rm_val) >> shift_imm;
                 }
+                break;
             }
             case ASR:
             {
@@ -222,6 +224,7 @@ static uint32_t ld_str_addr_mode(uint32_t instruction)
                 } else {
                     offset = arithmetic_right_shift(rm_val, shift_imm);
                 }
+                break;
             }
             case ROR:
             {
@@ -231,6 +234,7 @@ static uint32_t ld_str_addr_mode(uint32_t instruction)
                 } else {
                     offset = rotate_right(rm_val, shift_imm);
                 }
+                break;
             }
         }
     }
