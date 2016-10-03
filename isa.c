@@ -32,7 +32,6 @@ static uint8_t get_bit(uint32_t from, uint8_t bitid)
 
 static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
 {
-#define I_BIT 25
     struct ShifterOperand *retval = malloc(sizeof(struct ShifterOperand));
     enum ShifterType {
         LSLIMM = 0, //Logical shift left by immediate
@@ -177,15 +176,10 @@ static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t i
         }
     }
     return retval;
-#undef I_BIT
 }
 
 static uint32_t ld_str_addr_mode(uint32_t instruction)
 {
-#define W_BIT 21
-#define U_BIT 23
-#define P_BIT 24
-#define I_BIT 25
     enum ShifterType {
         LSL = 0x00, // logical shift left
         LSR = 0x01, // logical shift right
@@ -269,11 +263,6 @@ static uint32_t ld_str_addr_mode(uint32_t instruction)
     }
 
     return ret_val;
-
-#undef W_BIT
-#undef U_BIT
-#undef P_BIT
-#undef I_BIT
 }
 
 static uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
@@ -298,7 +287,7 @@ static uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter)
 #undef SIGN_BIT
 }
 
-bool condition_check(uint8_t cond)
+static bool condition_check(uint8_t cond)
 {
     enum Condition {
         EQ = 0x00,

@@ -5,6 +5,17 @@
 #include <stdbool.h>
 #include "sim.h"
 
+#define CPSR_N 31
+#define CPSR_Z 30
+#define CPSR_C 29
+#define CPSR_V 28
+
+#define W_BIT 21
+#define U_BIT 23
+#define P_BIT 24
+#define I_BIT 25
+
+
 /** Process instruction @ PC and increment PC by 4.
  * \param state Current state of CPU
  * \return New state of CPU
@@ -47,10 +58,5 @@ static uint32_t ld_str_addr_mode(uint32_t instruction);
  * \return boolean, true if execute current instruction
  */
 static bool condition_check(uint8_t cond)
-
-#define CPSR_N 31
-#define CPSR_Z 30
-#define CPSR_C 29
-#define CPSR_V 28
 
 #endif
