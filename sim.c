@@ -90,3 +90,8 @@ struct CPUState get_cpu_state()
 {
     return cpu_state;
 }
+
+void set_reg(uint8_t reg_num, uint16_t data)
+{
+    cpu_state.regs[reg_num] = data;
+}

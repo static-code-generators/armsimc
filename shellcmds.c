@@ -78,7 +78,7 @@ void cmd_rdump(char *fname)
     }
     struct CPUState state = get_cpu_state();
     fprintf(fp, "HALTED: %s\n", state.halted ? "Yes" : "No");
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i <= 14; i++) {
         fprintf(fp, "   r%02d: %08x\n", i, state.regs[i]);
     }
     fprintf(fp, "    PC: %08x\n", state.regs[15]);
@@ -88,10 +88,10 @@ void cmd_rdump(char *fname)
     }
 }
 
-void cmd_set(int reg_num, int reg_val)
+void cmd_set(int reg_num, uint32_t reg_val)
 {
     CHECK_INIT;
-    // TODO: yah do this okay
+    set_reg(reg_num, reg_val);
 }
 
 void cmd_help()
@@ -101,7 +101,7 @@ void cmd_help()
     printf("`step [i]`: execute one instruction (or optionally `i`)\n");
     printf("`mdump 0x<low> 0x<high> [dumpfile]`: dump the contents of memory, from location low to location high to the screen or to the dump file [dumpfile].\n");
     printf("`rdump [dumpfile]`: dump the current instruction count, the contents of R0 – R14, R15 (PC), and the CPSR to the screen or to the file [dumpfile].\n");
-    printf("`set <reg_num> <reg_val>`: set general purpose register reg num to value reg val.\n");
+    printf("`set r<n> 0x<reg_val>`: set general purpose register reg r_n to value reg_val.\n");
     printf("`?` or `help`: print out a list of all shell commands.\n");
     printf("`q` or `quit`: quit the shell.\n");
 }

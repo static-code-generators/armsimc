@@ -70,7 +70,10 @@ void exec(struct CmdContext *ctx)
         cmd_rdump(fname);
     } else if (strcmp(cmd, "set") == 0) {
         CHECK_ARGC_ELSE_RETURN(3);
-        int rnum = atoi(ctx->args[1]), rval = atoi(ctx->args[2]);
+        int rnum;
+        sscanf(ctx->args[1], "r%d", &rnum);
+        uint32_t rval;
+        sscanf(ctx->args[2], "0x%x", &rval);
         cmd_set(rnum, rval);
     } else if (strcmp(cmd, "?") == 0 || strcmp(cmd, "help") == 0) {
         cmd_help();

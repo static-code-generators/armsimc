@@ -48,5 +48,7 @@ uint32_t mem_read_32(uint32_t address);
 int cpu_cycle();
 /** Return current cpu state */
 struct CPUState get_cpu_state();
+/** Set register to data */
+void set_reg(uint8_t reg_num, uint16_t data);
 
 #endif
