@@ -86,9 +86,9 @@ static uint32_t get_bits(uint32_t from, uint8_t msb_id, uint8_t lsb_id)
     return (from >> lsb_id) & mask;
 }
 
-
-static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
+static struct ShifterOperand * shifter_operand(uint32_t instruction)
 {
+    struct CPUState state = curr_state;
     struct ShifterOperand *retval = malloc(sizeof(struct ShifterOperand));
     enum ShifterType {
         LSLIMM = 0, //Logical shift left by immediate
