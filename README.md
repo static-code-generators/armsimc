@@ -23,13 +23,15 @@ information requested from the simulator. The shell supports the following comma
 The project is organized into two major components: _Shell_ and _Simulator_
 
 **Shell**:
-    * `armsh.c` - Executable entry point, parses stdin and calls shell command handlers
-    * `shellcmds.c` - Executes shell commands, calling appropriate routines in _Simulator_ (sim.c)
+
+* `armsh.c` - Executable entry point, parses stdin and calls shell command handlers
+* `shellcmds.c` - Executes shell commands, calling appropriate routines in _Simulator_ (sim.c)
 
 **Simulator**:
-    * `sim.c` - CPU/Memory datapath and organization; routines to execute shell commands
-    * `isa.c` - Executes each instruction; routines to decode and handle instructions
-    * `isa_helper.c` - Helper routines for instruction-handlers
+
+* `sim.c` - CPU/Memory datapath and organization; routines to execute shell commands
+* `isa.c` - Executes each instruction; routines to decode and handle instructions
+* `isa_helper.c` - Helper routines for instruction-handlers
 
 ### Workflow
 
