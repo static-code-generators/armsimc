@@ -30,15 +30,13 @@ struct ShifterOperand {
 /**
  * Given instruction in ARM format, returns the shifter_operand and shifter_carry.
  *
- * @param state current state of machine, required when returning carry
- * flags or to read registers.
  * @param instruction the ARM format instruction.
  * The lowest 12 bits define the shifter operand stuff.
  *
  * @return malloc-ed pointer to a ShifterOperand struct.
  * The caller should free it after use
  */
-static struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction);
+static struct ShifterOperand * shifter_operand(uint32_t instruction);
 static uint32_t rotate_right(uint32_t shiftee, uint8_t shifter);
 static uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter);
 static uint8_t get_bit(uint32_t from, uint8_t bitid);
