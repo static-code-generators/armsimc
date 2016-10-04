@@ -57,7 +57,7 @@ static void decode_and_exec(uint32_t instruction)
         }
     } else if (get_bits(instruction, 27, 26) ==  0x0) {
         // DATA PROCESSING INSTRUCTIONS
-        uint8_t opcode = get_bits(instruction, 24, 21);
+        enum DataProcOpcode opcode = get_bits(instruction, 24, 21);
         switch (opcode) {
             case OP_RSC: exec_RSC(instruction); break;
         }
