@@ -1,5 +1,5 @@
 #include "isa_helper.h"
-
+#include "isa.h"
 
 /* Instructions to implement:
  * ADC ADD AND B BIC
