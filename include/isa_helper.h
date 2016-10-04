@@ -10,6 +10,8 @@
 #define CPSR_C 29
 #define CPSR_V 28
 
+#define S_BIT 20
+
 #define L_BIT 20
 #define W_BIT 21
 #define B_BIT 22
