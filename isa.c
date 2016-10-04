@@ -101,7 +101,7 @@ static void exec_RSC(uint32_t instruction)
 {
     if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
         struct ShifterOperand * shiftop;
-        shiftop = shifter_operand(curr_state, get_bits(instruction, 11, 0));
+        shiftop = shifter_operand(curr_state, instruction);
         uint8_t rd_id = get_bits(instruction, 15, 12);
         uint8_t rn_id = get_bits(instruction, 19, 16);
         uint32_t rn_val = curr_state.regs[rn_id];
