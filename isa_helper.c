@@ -18,6 +18,26 @@ uint32_t get_bits(uint32_t from, uint8_t msb_id, uint8_t lsb_id)
     return (from >> lsb_id) & mask;
 }
 
+bool check_add_carry(uint32_t a, uint32_t b)
+{
+    uint32_t res = a + b;
+    return (res < a);
+}
+
+bool check_sub_borrow(uint32_t a, uint32_t b)
+{
+    uint32_t res = a - b;
+    return (res > a);
+}
+
+bool check_overflow(uint32_t a, uint32_t b)
+{
+    uint32_t res = a + b;
+    // overflow = !a_31.!b_31.res_31 || a_31.b_31.!res_31
+    return (!(a >> 31) && !(b >> 31) && (res >> 31)) ||
+           ((a >> 31) && (b >> 31) && !(res >> 31));
+}
+
 struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
 {
     struct ShifterOperand *retval = malloc(sizeof(struct ShifterOperand));
