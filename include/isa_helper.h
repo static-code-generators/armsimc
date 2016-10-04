@@ -42,6 +42,7 @@ uint32_t get_bits(uint32_t from, uint8_t msb_id, uint8_t lsb_id);
 bool check_add_carry(uint32_t a, uint32_t b);
 bool check_sub_borrow(uint32_t a, uint32_t b);
 bool check_overflow(uint32_t a, uint32_t b);
+void set_bit(uint32_t *reg, uint8_t bit_id, uint8_t bit_val);
 
 /** Handle addr_mode and I, P, U, W operands.
  * Refer to Section A5.2 in ARM manual.

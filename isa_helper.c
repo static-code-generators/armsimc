@@ -38,6 +38,16 @@ bool check_overflow(uint32_t a, uint32_t b)
            ((a >> 31) && (b >> 31) && !(res >> 31));
 }
 
+void set_bit(uint32_t *reg, uint8_t bit_id, uint8_t bit_val)
+{
+    if(bit_val == 1){
+        *(reg) |= (1 << bit_id);
+    }
+    else{
+        *(reg) &= ~(1 << bit_id);
+    }
+}
+
 struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruction)
 {
     struct ShifterOperand *retval = malloc(sizeof(struct ShifterOperand));
