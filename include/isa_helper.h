@@ -42,10 +42,19 @@ uint32_t rotate_right(uint32_t shiftee, uint8_t shifter);
 uint32_t arithmetic_right_shift(uint32_t shiftee, uint8_t shifter);
 uint8_t get_bit(uint32_t from, uint8_t bitid);
 uint32_t get_bits(uint32_t from, uint8_t msb_id, uint8_t lsb_id);
+void set_bit(uint32_t *reg, uint8_t bit_id, uint8_t bit_val);
+
 bool check_add_carry(uint32_t a, uint32_t b);
 bool check_sub_borrow(uint32_t a, uint32_t b);
+
+/** Get overflow bit of a bitwise addition.
+ * NB: if you want overflow bit for sub (op1 - op2) call function
+ * like `check_overflow(op1, -op2)`
+ * \param a operand1
+ * \param b operand2
+ * \return overflow bit (bool)
+ */
 bool check_overflow(uint32_t a, uint32_t b);
-void set_bit(uint32_t *reg, uint8_t bit_id, uint8_t bit_val);
 
 /** Handle addr_mode and I, P, U, W operands.
  * Refer to Section A5.2 in ARM manual.
