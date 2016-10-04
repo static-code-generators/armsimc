@@ -87,38 +87,9 @@ static void exec_CMN(uint32_t instruction)
         uint32_t alu_out = op1 + op2;
 
         set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-
-        if(alu_out == 0){
-            set_bit(&(curr_state.CPSR), CPSR_Z, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_Z, 0);
-        }
-
-        if(op2 <= op1){
-            set_bit(&(curr_state.CPSR), CPSR_C, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_C, 0);
-        }
-
-        bool carry = op2 - (INT_MAX - op1);
-
-        if(carry){
-            set_bit(&(curr_state.CPSR), CPSR_C, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_C, 0);
-        }
-
-        bool overflow = ((op1 >= 0 && op2 >= 0) || (op1 < 0 && op2 < 0)) &&
-                        ((op1 < 0 && alu_out >= 0) || (op1 >= 0 && alu_out < 0));  
-        if(overflow){
-            set_bit(&(curr_state.CPSR), CPSR_V, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_V, 0);
-        }
+        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
+        set_bit(&(curr_state.CPSR), CPSR_C, check_add_carry(op1, op2));
+        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, op2));
     }
 }
 
@@ -133,29 +104,9 @@ static void exec_CMP(uint32_t instruction)
         uint32_t alu_out = op1 - op2;
 
         set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-
-        if(alu_out == 0){
-            set_bit(&(curr_state.CPSR), CPSR_Z, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_Z, 0);
-        }
-
-        if(op2 <= op1){
-            set_bit(&(curr_state.CPSR), CPSR_C, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_C, 0);
-        }
-
-        bool overflow = ((op1 < 0 && op2 >= 0) || (op1 >= 0 && op2 < 0)) &&
-                        ((op1 < 0 && alu_out >= 0) || (op1 >= 0 && alu_out < 0));  
-        if(overflow){
-            set_bit(&(curr_state.CPSR), CPSR_V, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_V, 0);
-        }
+        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
+        set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(op1, op2));
+        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, op2));
 
 
     }
@@ -168,12 +119,12 @@ static void exec_EOR(uint32_t instruction)
         uint32_t Rd_addr = get_bits(instruction, 15, 12);
         struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
 
-        curr_state.regs[Rd_addr] = curr_state.regs[Rn_addr] ^ shifter_op->shifter_operand;
+        next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] ^ shifter_op->shifter_operand;
 
-        if(get_bit(curr_state.CPSR, CPSR_S)){
+        if(get_bit(instruction, S_BIT) == 1){
             set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
 
-            if(curr_state.regs[Rd_addr] == 0){
+            if(next_state.regs[Rd_addr] == 0){
                 set_bit(&(curr_state.CPSR), CPSR_Z, 1);
             }
             else{
@@ -192,12 +143,12 @@ static void exec_ORR(uint32_t instruction)
         uint32_t Rd_addr = get_bits(instruction, 15, 12);
         struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
 
-        curr_state.regs[Rd_addr] = curr_state.regs[Rn_addr] | shifter_op->shifter_operand;
+        next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] | shifter_op->shifter_operand;
 
-        if(get_bit(curr_state.CPSR, CPSR_S)){
+        if(get_bit(instruction, S_BIT) == 1){
             set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
 
-            if(curr_state.regs[Rd_addr] == 0){
+            if(next_state.regs[Rd_addr] == 0){
                 set_bit(&(curr_state.CPSR), CPSR_Z, 1);
             }
             else{
@@ -218,14 +169,7 @@ static void exec_TST(uint32_t instruction)
         uint32_t alu_out = curr_state.regs[Rn_addr] & shifter_op->shifter_operand;
 
         set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-
-        if(alu_out == 0){
-            set_bit(&(curr_state.CPSR), CPSR_Z, 1);
-        }
-        else{
-            set_bit(&(curr_state.CPSR), CPSR_Z, 0);
-        }
-
+        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
         set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
   
     }
