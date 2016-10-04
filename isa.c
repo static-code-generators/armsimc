@@ -44,6 +44,9 @@ struct CPUState process_instruction(struct CPUState state)
 
 static void decode_and_exec(uint32_t instruction)
 {
+    if (!condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        return;
+    }
     if (get_bits(instruction, 27, 25) == 0x2 ||
         (get_bits(instruction, 27, 25) ==  0x3 && get_bit(instruction, 4) == 0)) {
         // LOAD STORE INSTRUCTIONS
@@ -78,138 +81,120 @@ static void decode_and_exec(uint32_t instruction)
 
 static void exec_LDR(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
-        uint32_t data = mem_read_32(address);
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        next_state.regs[rd_id] = data;
-    }
+    uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
+    uint32_t data = mem_read_32(address);
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    next_state.regs[rd_id] = data;
 }
 
 static void exec_STR(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        uint32_t data = curr_state.regs[rd_id];
-        uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
-        mem_write_32(address, data);
-    }
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    uint32_t data = curr_state.regs[rd_id];
+    uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
+    mem_write_32(address, data);
 }
 
 static void exec_STRB(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        uint8_t data = curr_state.regs[rd_id] & 0xff; // LSB byte of reg
-        uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
-        mem_write_8(address, data);
-    }
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t data = curr_state.regs[rd_id] & 0xff; // LSB byte of reg
+    uint32_t address = ld_str_addr_mode(curr_state, &next_state, instruction);
+    mem_write_8(address, data);
 }
 
 static void exec_CMN(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t Rn_addr = get_bits(instruction, 19, 16);
-        struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
-        uint32_t op1 = curr_state.regs[Rn_addr];
-        uint32_t op2 = shifter_op->shifter_operand;
+    uint32_t Rn_addr = get_bits(instruction, 19, 16);
+    struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
+    uint32_t op1 = curr_state.regs[Rn_addr];
+    uint32_t op2 = shifter_op->shifter_operand;
 
-        uint32_t alu_out = op1 + op2;
+    uint32_t alu_out = op1 + op2;
 
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
-        set_bit(&(curr_state.CPSR), CPSR_C, check_add_carry(op1, op2));
-        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, op2));
-    }
+    set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
+    set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
+    set_bit(&(curr_state.CPSR), CPSR_C, check_add_carry(op1, op2));
+    set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, op2));
 }
 
 static void exec_CMP(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t Rn_addr = get_bits(instruction, 19, 16);
-        struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
-        uint32_t op1 = curr_state.regs[Rn_addr];
-        uint32_t op2 = shifter_op->shifter_operand;
+    uint32_t Rn_addr = get_bits(instruction, 19, 16);
+    struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
+    uint32_t op1 = curr_state.regs[Rn_addr];
+    uint32_t op2 = shifter_op->shifter_operand;
 
-        uint32_t alu_out = op1 - op2;
+    uint32_t alu_out = op1 - op2;
 
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
-        set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(op1, op2));
-        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, -op2));
-    }
+    set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
+    set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
+    set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(op1, op2));
+    set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, -op2));
 }
 
 static void exec_EOR(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t Rn_addr = get_bits(instruction, 19, 16);
-        uint32_t Rd_addr = get_bits(instruction, 15, 12);
-        struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
+    uint32_t Rn_addr = get_bits(instruction, 19, 16);
+    uint32_t Rd_addr = get_bits(instruction, 15, 12);
+    struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
 
-        next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] ^ shifter_op->shifter_operand;
+    next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] ^ shifter_op->shifter_operand;
 
-        if(get_bit(instruction, S_BIT) == 1){
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
-            set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
-        }
+    if(get_bit(instruction, S_BIT) == 1){
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
+        set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
     }
 }
 
 // reverse subtract, with carry
 static void exec_RSC(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        struct ShifterOperand * shiftop;
-        shiftop = shifter_operand(curr_state, instruction);
-        uint8_t rd_id = get_bits(instruction, 15, 12);
-        uint8_t rn_id = get_bits(instruction, 19, 16);
-        uint32_t rn_val = curr_state.regs[rn_id];
-        bool carry = get_bit(curr_state.CPSR, CPSR_C);
-        uint32_t rd_val = shiftop->shifter_operand - rn_val - !carry;
-        next_state.regs[rd_id] = rd_val;
-        if (get_bit(instruction, S_BIT) == 1) {
-            set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
-            set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
-            set_bit(&next_state.CPSR, CPSR_C,
-                    !check_sub_borrow(rd_val, rn_val + !carry)); // c = !b
-            set_bit(&next_state.CPSR, CPSR_V,
-                    check_overflow(rd_val, -(rn_val + !carry)));
-        }
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint8_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t rn_id = get_bits(instruction, 19, 16);
+    uint32_t rn_val = curr_state.regs[rn_id];
+    bool carry = get_bit(curr_state.CPSR, CPSR_C);
+    uint32_t rd_val = shiftop->shifter_operand - rn_val - !carry;
+    next_state.regs[rd_id] = rd_val;
+    if (get_bit(instruction, S_BIT) == 1) {
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
+        set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
+        set_bit(&next_state.CPSR, CPSR_C,
+                !check_sub_borrow(rd_val, rn_val + !carry)); // c = !b
+        set_bit(&next_state.CPSR, CPSR_V,
+                check_overflow(rd_val, -(rn_val + !carry)));
     }
 }
 
 static void exec_ORR(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t Rn_addr = get_bits(instruction, 19, 16);
-        uint32_t Rd_addr = get_bits(instruction, 15, 12);
-        struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
+    uint32_t Rn_addr = get_bits(instruction, 19, 16);
+    uint32_t Rd_addr = get_bits(instruction, 15, 12);
+    struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
 
-        next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] | shifter_op->shifter_operand;
+    next_state.regs[Rd_addr] = curr_state.regs[Rn_addr] | shifter_op->shifter_operand;
 
-        if(get_bit(instruction, S_BIT) == 1){
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
-            set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
-        }
+    if(get_bit(instruction, S_BIT) == 1){
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
+        set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
     }
 }
 
 static void exec_TST(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t Rn_addr = get_bits(instruction, 19, 16);
-        struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
+    uint32_t Rn_addr = get_bits(instruction, 19, 16);
+    struct ShifterOperand *shifter_op = shifter_operand(curr_state, instruction);
 
-        uint32_t alu_out = curr_state.regs[Rn_addr] & shifter_op->shifter_operand;
+    uint32_t alu_out = curr_state.regs[Rn_addr] & shifter_op->shifter_operand;
 
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
-        set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
-  
-    }
+    set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
+    set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
+    set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
+
 }
 
 /* So we don't do the normal SWI stuff as we have no OS, we just check if we got
@@ -217,10 +202,8 @@ static void exec_TST(uint32_t instruction)
  */
 static void exec_SWI(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t immed_24 = get_bits(instruction, 23, 0);
-        if (immed_24 == 10) {
-            next_state.halted = 1;
-        }
+    uint32_t immed_24 = get_bits(instruction, 23, 0);
+    if (immed_24 == 10) {
+        next_state.halted = 1;
     }
 }
