@@ -121,14 +121,7 @@ static void exec_EOR(uint32_t instruction)
 
         if(get_bit(instruction, S_BIT) == 1){
             set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
-
-            if(next_state.regs[Rd_addr] == 0){
-                set_bit(&(curr_state.CPSR), CPSR_Z, 1);
-            }
-            else{
-                set_bit(&(curr_state.CPSR), CPSR_Z, 0);
-            }
-
+            set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
             set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
         }
     }
@@ -145,14 +138,7 @@ static void exec_ORR(uint32_t instruction)
 
         if(get_bit(instruction, S_BIT) == 1){
             set_bit(&(curr_state.CPSR), CPSR_N, get_bit(curr_state.regs[Rd_addr], 31));
-
-            if(next_state.regs[Rd_addr] == 0){
-                set_bit(&(curr_state.CPSR), CPSR_Z, 1);
-            }
-            else{
-                set_bit(&(curr_state.CPSR), CPSR_Z, 0);
-            }
-
+            set_bit(&(curr_state.CPSR), CPSR_Z, next_state.regs[Rd_addr] ? 0 : 1);
             set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
         }
     }
