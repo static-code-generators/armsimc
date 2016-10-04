@@ -1,5 +1,5 @@
 #include "isa_helper.h"
-#include "isa.h"
+
 
 /* Instructions to implement:
  * ADC ADD AND B BIC
@@ -13,11 +13,15 @@ static void decode_and_exec(uint32_t instruction);
 static void exec_LDR(uint32_t instruction);
 static void exec_STR(uint32_t instruction);
 static void exec_STRB(uint32_t instruction);
+static void exec_SWI(uint32_t instruction);
 
 static struct CPUState next_state, curr_state;
 
 struct CPUState process_instruction(struct CPUState state)
 {
+    if (state.halted) {
+        return state;
+    }
     next_state = curr_state = state;
     uint32_t instruction = mem_read_32(curr_state.regs[PC]);
     decode_and_exec(instruction);
@@ -43,6 +47,8 @@ static void decode_and_exec(uint32_t instruction)
                 exec_STRB(instruction);
             }
         }
+    } else if (get_bits(instruction, 27, 24) == 0xf) { // SWI
+        exec_SWI(instruction);
     }
 }
 
@@ -76,3 +82,15 @@ static void exec_STRB(uint32_t instruction)
     }
 }
 
+/* So we don't do the normal SWI stuff as we have no OS, we just check if we got
+ * `swi #10` and if yes, we halt processor and bye bye
+ */
+static void exec_SWI(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        uint32_t immed_24 = get_bits(instruction, 23, 0);
+        if (immed_24 == 10) {
+            next_state.halted = 1;
+        }
+    }
+}
