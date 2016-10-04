@@ -106,9 +106,7 @@ static void exec_CMP(uint32_t instruction)
         set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
         set_bit(&(curr_state.CPSR), CPSR_Z, alu_out ? 0 : 1);
         set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(op1, op2));
-        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, op2));
-
-
+        set_bit(&(curr_state.CPSR), CPSR_V, check_overflow(op1, -op2));
     }
 }
 
