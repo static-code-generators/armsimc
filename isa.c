@@ -22,6 +22,11 @@ static void exec_STR(uint32_t instruction);
 static void exec_STRB(uint32_t instruction);
 static void exec_SWI(uint32_t instruction);
 static void exec_RSC(uint32_t instruction);
+static void exec_CMP(uint32_t instruction);
+static void exec_CMN(uint32_t instruction);
+static void exec_EOR(uint32_t instruction);
+static void exec_ORR(uint32_t instruction);
+static void exec_TST(uint32_t instruction);
 
 static struct CPUState next_state, curr_state;
 
@@ -60,6 +65,11 @@ static void decode_and_exec(uint32_t instruction)
         enum DataProcOpcode opcode = get_bits(instruction, 24, 21);
         switch (opcode) {
             case OP_RSC: exec_RSC(instruction); break;
+            case OP_CMP: exec_CMP(instruction); break;
+            case OP_CMN: exec_CMN(instruction); break;
+            case OP_EOR: exec_EOR(instruction); break;
+            case OP_ORR: exec_ORR(instruction); break;
+            case OP_TST: exec_TST(instruction); break;
         }
     } else if (get_bits(instruction, 27, 24) == 0xf) { // SWI
         exec_SWI(instruction);
