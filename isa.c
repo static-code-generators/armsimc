@@ -298,10 +298,12 @@ static void exec_B(uint32_t instruction)
 
 static void exec_BL(uint32_t instruction)
 {
-    uint32_t immed_24 = get_bits(instruction, 23, 0);
-    uint8_t L = get_bit(instruction, 24);
-    if (L == 1) {
-        curr_state.regs[LR] = curr_state.regs[PC];
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        uint32_t immed_24 = get_bits(instruction, 23, 0);
+        uint8_t L = get_bit(instruction, 24);
+        if (L == 1) {
+            curr_state.regs[LR] = curr_state.regs[PC];
+        }
+        curr_state.regs[PC] += (int32_t)(sign_extend(immed_24, 24, 30) << 2);
     }
-    curr_state.regs[PC] += (int32_t)(sign_extend(immed_24, 24, 30) << 2);
 }
