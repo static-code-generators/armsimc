@@ -212,7 +212,7 @@ static void exec_SWI(uint32_t instruction)
         next_state.halted = 1;
     }
 }
-//recheck
+
 static void exec_ADC(uint32_t instruction)
 {
     struct ShifterOperand * shiftop;
@@ -286,10 +286,12 @@ static void exec_BIC(uint32_t instruction)
 
 static void exec_B(uint32_t instruction)
 {
+    uint8_t signed_immed_24 = get_bits(instruction, 23, 0);
+    LR_address = 14;
     if (get_bit(instruction, L_BIT) == 1){
-        
+        next_state.regs[LR_address] = curr_state.regs[PC] + 4;      // address of instruction after the branch instruction 
     }
-
+    next_state.regs[PC] = curr_state.regs[PC] + (sign_extend(signed_immed_24,30,24) << 2);
 }
 
 
