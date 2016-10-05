@@ -289,9 +289,8 @@ static void exec_BIC(uint32_t instruction)
 static void exec_B(uint32_t instruction)
 {
     uint8_t signed_immed_24 = get_bits(instruction, 23, 0);
-    LR_address = 14;
     if (get_bit(instruction, L_BIT) == 1){
-        next_state.regs[LR_address] = curr_state.regs[PC] + 4;
+        next_state.regs[LR] = curr_state.regs[PC] + 4;
         // address of instruction after the branch instruction stored in LR
     }
     next_state.regs[PC] = curr_state.regs[PC] + (sign_extend(signed_immed_24,30,24) << 2);
