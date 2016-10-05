@@ -17,6 +17,11 @@ enum DataProcOpcode {
 };
 
 static void decode_and_exec(uint32_t instruction);
+static void exec_ADC(uint32_t instruction);
+static void exec_ADD(uint32_t instruction);
+static void exec_AND(uint32_t instruction);
+static void exec_B(uint32_t instruction);
+static void exec_BIC(uint32_t instruction);
 static void exec_LDR(uint32_t instruction);
 static void exec_STR(uint32_t instruction);
 static void exec_STRB(uint32_t instruction);
@@ -207,3 +212,84 @@ static void exec_SWI(uint32_t instruction)
         next_state.halted = 1;
     }
 }
+//recheck
+static void exec_ADC(uint32_t instruction)
+{
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint8_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t rn_id = get_bits(instruction, 19, 16);
+    uint32_t rn_val = curr_state.regs[rn_id];
+    bool carry = get_bit(curr_state.CPSR, CPSR_C);
+    uint32_t rd_val = rn_val + shiftop->shifter_operand + carry;
+    next_state.regs[rd_id] = rd_val;
+    if (get_bit(instruction, S_BIT) == 1) {
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
+        set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
+        set_bit(&next_state.CPSR, CPSR_C,
+                check_add_carry(rn_val, shiftop->shifter_operand + carry));
+        set_bit(&next_state.CPSR, CPSR_V,
+                check_overflow(rn_val, shiftop->shifter_operand + carry));
+    }
+}
+
+static void exec_ADD(uint32_t instruction)
+{
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint8_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t rn_id = get_bits(instruction, 19, 16);
+    uint32_t rn_val = curr_state.regs[rn_id];
+    uint32_t rd_val = rn_val + shiftop->shifter_operand;
+    next_state.regs[rd_id] = rd_val;
+    if (get_bit(instruction, S_BIT) == 1) {
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
+        set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
+        set_bit(&next_state.CPSR, CPSR_C,
+                check_add_carry(rn_val, shiftop->shifter_operand));
+        set_bit(&next_state.CPSR, CPSR_V,
+                check_overflow(rn_val, shiftop->shifter_operand));
+    }
+}
+
+static void exec_AND(uint32_t instruction)
+{
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint8_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t rn_id = get_bits(instruction, 19, 16);
+    uint32_t rn_val = curr_state.regs[rn_id];
+    uint32_t rd_val = rn_val & shiftop->shifter_operand;
+    next_state.regs[rd_id] = rd_val;
+    if (get_bit(instruction, S_BIT) == 1) {
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
+        set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
+        set_bit(&next_state.CPSR, CPSR_C,shiftop->shifter_carry);
+    }
+}
+
+static void exec_BIC(uint32_t instruction)
+{
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint8_t rd_id = get_bits(instruction, 15, 12);
+    uint8_t rn_id = get_bits(instruction, 19, 16);
+    uint32_t rn_val = curr_state.regs[rn_id];
+    uint32_t rd_val = rn_val & !(shiftop->shifter_operand);
+    next_state.regs[rd_id] = rd_val;
+    if (get_bit(instruction, S_BIT) == 1) {
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
+        set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
+        set_bit(&next_state.CPSR, CPSR_C,shiftop->shifter_carry);
+    }
+}
+
+static void exec_B(uint32_t instruction)
+{
+    if (get_bit(instruction, L_BIT) == 1){
+        
+    }
+
+}
+
+
