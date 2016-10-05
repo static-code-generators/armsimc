@@ -163,9 +163,9 @@ static void exec_RSC(uint32_t instruction)
         set_bit(&next_state.CPSR, CPSR_N, get_bit(rd_val, 31));
         set_bit(&next_state.CPSR, CPSR_Z, (rd_val ? 0 : 1));
         set_bit(&next_state.CPSR, CPSR_C,
-                !check_sub_borrow(rd_val, rn_val + !carry)); // c = !b
+                !check_sub_borrow(shiftop->shifter_operand, rn_val + !carry)); // c = !b
         set_bit(&next_state.CPSR, CPSR_V,
-                check_overflow(rd_val, -(rn_val + !carry)));
+                check_overflow(shiftop->shifter_operand, -(rn_val + !carry)));
     }
 }
 
