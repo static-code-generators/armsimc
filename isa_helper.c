@@ -70,7 +70,7 @@ struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruct
         if (rotate_imm == 0) {
             retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
         } else {
-            retval->shifter_carry = get_bit(retval->shifter_carry, 31);
+            retval->shifter_carry = get_bit(retval->shifter_operand, 31);
         }
     } else {
         s_type = (instruction >> 4) & 0x7; //bits 6-4
@@ -83,7 +83,7 @@ struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruct
                     if (shift_imm == 0) {
                         retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
                     } else {
-                        retval->shifter_carry = get_bit(retval->shifter_carry, 32 - shift_imm);
+                        retval->shifter_carry = get_bit(retval->shifter_operand, 32 - shift_imm);
                     }
                     break;
                 }
@@ -95,7 +95,7 @@ struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruct
                     if (shift == 0) {
                         retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
                     } else if (shift <= 32) {
-                        retval->shifter_carry = get_bit(retval->shifter_carry, 32 - shift);
+                        retval->shifter_carry = get_bit(retval->shifter_operand, 32 - shift);
                     } else {
                         retval->shifter_carry = 0;
                     }
@@ -120,7 +120,7 @@ struct ShifterOperand * shifter_operand(struct CPUState state, uint32_t instruct
                     if (shift == 0) {
                         retval->shifter_carry = get_bit(state.CPSR, CPSR_C);
                     } else if (shift <= 32) {
-                        retval->shifter_carry = get_bit(retval->shifter_carry, shift - 1);
+                        retval->shifter_carry = get_bit(retval->shifter_operand, shift - 1);
                     } else {
                         retval->shifter_carry = 0;
                     }
