@@ -32,11 +32,11 @@ static void exec_CMN(uint32_t instruction);
 static void exec_EOR(uint32_t instruction);
 static void exec_ORR(uint32_t instruction);
 static void exec_TST(uint32_t instruction);
-static void exec_BL(uint32_t instruction)
-static void exec_RSB(uint32_t instruction)
-static void exec_SUB(uint32_t instruction)
-static void exec_TEQ(uint32_t instruction)
-static void exec_SBC(uint32_t instruction)
+static void exec_BL(uint32_t instruction);
+static void exec_RSB(uint32_t instruction);
+static void exec_SUB(uint32_t instruction);
+static void exec_TEQ(uint32_t instruction);
+static void exec_SBC(uint32_t instruction);
 
 static struct CPUState next_state, curr_state;
 
