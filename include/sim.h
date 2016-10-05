@@ -7,6 +7,7 @@
 #define NB_REGS 16
 
 #define PC 15
+#define LR 14
 #define CPSR_C 29
 #define LR 14
 
