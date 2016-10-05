@@ -20,6 +20,8 @@
 #define P_BIT 24
 #define I_BIT 25
 
+#define LR 14
+
 struct ShifterOperand {
     uint32_t shifter_operand;
     uint8_t shifter_carry;
