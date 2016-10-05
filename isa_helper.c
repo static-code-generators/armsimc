@@ -4,9 +4,7 @@
 uint32_t rotate_right(uint32_t shiftee, uint8_t shifter)
 {
     return (shiftee << (32 - shifter)) | (shiftee >> (shifter));
-}
-
-uint8_t get_bit(uint32_t from, uint8_t bitid)
+} uint8_t get_bit(uint32_t from, uint8_t bitid)
 {
     return (from >> bitid) & 1;
 }
@@ -424,5 +422,32 @@ bool condition_check(struct CPUState curr_state, uint8_t cond)
                 break;
             }
         default: return false;
+    }
+}
+
+uint32_t sign_extend(uint32_t num, uint8_t curr_width, uint8_t req_width)
+{
+    const uint32_t one = 1;
+    if (req_width > 32) {
+        fprintf(stderr, "Error: requirements too wide, I'm not even going to try");
+        return num;
+    }
+    if (req_width < curr_width) {
+        fprintf(stderr, "Warning: curr_width(=%d) > req_width(=%d), may lead to overflow", curr_width, req_width);
+        num &= ((one << req_width) - 1);
+        return num;
+    } else if (req_width == curr_width) {
+        return num;
+    } else {
+        if (num & (one << (curr_width - 1))) { //negative
+            uint32_t mask_big = (one << req_width) - 1;
+            uint32_t mask_small = (one << curr_width) - 1;
+            num |= (mask_big ^ mask_small);
+            return num;
+        } else { //not negative.
+            uint32_t mask_small = (one << curr_width) - 1;
+            num &= mask_small;
+            return num;
+        }
     }
 }
