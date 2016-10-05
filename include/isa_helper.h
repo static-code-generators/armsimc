@@ -20,8 +20,6 @@
 #define P_BIT 24
 #define I_BIT 25
 
-#define LR 14
-
 struct ShifterOperand {
     uint32_t shifter_operand;
     uint8_t shifter_carry;
@@ -78,5 +76,7 @@ uint32_t ld_str_addr_mode(struct CPUState curr_state,
  * \return boolean, true if execute current instruction
  */
 bool condition_check(struct CPUState curr_state, uint8_t cond);
+
+uint32_t sign_extend(uint32_t num, uint8_t curr_width, uint8_t req_width);
 
 #endif

@@ -4,7 +4,9 @@
 uint32_t rotate_right(uint32_t shiftee, uint8_t shifter)
 {
     return (shiftee << (32 - shifter)) | (shiftee >> (shifter));
-} uint8_t get_bit(uint32_t from, uint8_t bitid)
+}
+
+uint8_t get_bit(uint32_t from, uint8_t bitid)
 {
     return (from >> bitid) & 1;
 }
