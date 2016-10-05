@@ -35,6 +35,11 @@ static void exec_RSB(uint32_t instruction);
 static void exec_SUB(uint32_t instruction);
 static void exec_TEQ(uint32_t instruction);
 static void exec_SBC(uint32_t instruction);
+static void exec_LDRB(uint32_t instruction);
+static void exec_MUL(uint32_t instruction);
+static void exec_MLA(uint32_t instruction);
+static void exec_MOV(uint32_t instruction);
+static void exec_MVN(uint32_t instruction);
 
 static struct CPUState next_state, curr_state;
 
@@ -66,7 +71,8 @@ static void decode_and_exec(uint32_t instruction)
             }
         } else {
             if (get_bit(instruction, L_BIT) == 1) { // LDRB
-                // @RadhikaG has to do this
+                exec_LDRB(instruction);
+                // no ure mum does dis evry night
             } else { // STRB
                 exec_STRB(instruction);
             }
@@ -81,9 +87,19 @@ static void decode_and_exec(uint32_t instruction)
             case OP_EOR: exec_EOR(instruction); break;
             case OP_ORR: exec_ORR(instruction); break;
             case OP_TST: exec_TST(instruction); break;
+            case OP_MOV: exec_MOV(instruction); break;
+            case OP_MVN: exec_MVN(instruction); break;
         }
     } else if (get_bits(instruction, 27, 24) == 0xf) { // SWI
         exec_SWI(instruction);
+    } else if (get_bits(instruction, 27, 24) == 0x0 && 
+            get_bits(instruction, 7, 4) == 0x9 && get_bits(instruction, 31, 28) != 0xF) {
+        // MULTIPLY INSTRUCTIONS
+        if (get_bits(instruction, 23, 21) == 0x1) { // MLA
+            exec_MLA(instruction);
+        } else if (get_bits(instruction, 23, 21) == 0x0) { // MUL
+            exec_MUL(instruction);
+        }
     }
 }
 
@@ -331,6 +347,7 @@ static void exec_SUB(uint32_t instruction)
     }
 }
 
+<<<<<<< 7d4c0f5371144fcde4984c736569dbc163f1eeac
 static void exec_TEQ(uint32_t instruction)
 {
 
@@ -360,5 +377,88 @@ static void exec_SBC(uint32_t instruction)
         set_bit(&next_state.CPSR, CPSR_Z, !curr_state.regs[Rdi]);
         set_bit(&(next_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C)));
         set_bit(&(next_state.CPSR), CPSR_V, check_overflow(curr_state.regs[Rni], -(shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C))));
+    }
+}
+
+static void exec_LDRB(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        uint8_t data = mem_read_8(ld_str_addr_mode(curr_state, &(next_state), instruction));
+        uint32_t rd_id = get_bits(instruction, 15, 12);
+        next_state.regs[rd_id] = data; // casting uint8_t to uint32_t zeros top 3 bytes on its own; done to store byte to LSB of rd_id
+    }
+}
+
+// Multiply and Multiply-Accumulate Instructions
+// MUL and MLA produce the low 32 bits of a multiply.
+// TIL: The results of a signed multiply and an unsigned multiply
+// differ only in the upper 32 bits; the low 32 bits remain the same for both.
+// So we can use the MUL and MLA ops unchanged for signed and unsigned operands.
+static void exec_MUL(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        uint32_t rd_id = get_bits(instruction, 19, 16);
+        uint32_t rs_id = get_bits(instruction, 11, 8);
+        uint32_t rm_id = get_bits(instruction, 3, 0);
+
+        uint32_t result = curr_state.regs[rm_id] * curr_state.regs[rs_id]; // we don't care about overflows; no need to set C(arry) flag
+        next_state.regs[rd_id] = result;
+        
+        if (get_bit(instruction, S_BIT)) {
+            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
+            set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
+        }
+    }
+}
+
+static void exec_MLA(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        uint32_t rd_id = get_bits(instruction, 19, 16);
+        uint32_t rn_id = get_bits(instruction, 15, 12);
+        uint32_t rs_id = get_bits(instruction, 11, 8);
+        uint32_t rm_id = get_bits(instruction, 3, 0);
+
+        uint32_t result = (curr_state.regs[rm_id] * curr_state.regs[rs_id]) + curr_state.regs[rn_id]; // we don't care about overflows; no need to set C(arry) flag
+        next_state.regs[rd_id] = result;
+        
+        if (get_bit(instruction, S_BIT)) {
+            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
+            set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
+        }
+    }
+}
+
+static void exec_MOV(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        struct ShifterOperand * shiftop;
+        shiftop = shifter_operand(curr_state, instruction);
+        uint32_t val = shiftop->shifter_operand;
+        uint32_t rd_id = get_bits(instruction, 15, 12);
+        curr_state.regs[rd_id] = val;
+
+        if (get_bit(instruction, S_BIT)) {
+            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
+            set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+            set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
+        }
+    }
+}
+
+static void exec_MVN(uint32_t instruction)
+{
+    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
+        struct ShifterOperand * shiftop;
+        shiftop = shifter_operand(curr_state, instruction);
+        uint32_t val = ~(shiftop->shifter_operand) & 0xFFFFFFFF; // bitwise negation promotes result to (int); bitwise and-ing done to prevent this
+        uint32_t rd_id = get_bits(instruction, 15, 12);
+        curr_state.regs[rd_id] = val;
+
+        if (get_bit(instruction, S_BIT)) {
+            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
+            set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+            set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
+        }
     }
 }
