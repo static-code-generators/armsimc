@@ -434,7 +434,7 @@ static void exec_MOV(uint32_t instruction)
     shiftop = shifter_operand(curr_state, instruction);
     uint32_t val = shiftop->shifter_operand;
     uint32_t rd_id = get_bits(instruction, 15, 12);
-    curr_state.regs[rd_id] = val;
+    next_state.regs[rd_id] = val;
 
     if (get_bit(instruction, S_BIT)) {
         set_bit(&(next_state.CPSR), CPSR_N, get_bit(val, 31));
@@ -449,7 +449,7 @@ static void exec_MVN(uint32_t instruction)
     shiftop = shifter_operand(curr_state, instruction);
     uint32_t val = ~(shiftop->shifter_operand) & 0xFFFFFFFF; // bitwise negation promotes result to (int); bitwise and-ing done to prevent this
     uint32_t rd_id = get_bits(instruction, 15, 12);
-    curr_state.regs[rd_id] = val;
+    next_state.regs[rd_id] = val;
 
     if (get_bit(instruction, S_BIT)) {
         set_bit(&(next_state.CPSR), CPSR_N, get_bit(val, 31));
