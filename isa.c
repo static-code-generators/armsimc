@@ -77,7 +77,10 @@ static void decode_and_exec(uint32_t instruction)
                 exec_STRB(instruction);
             }
         }
-    } else if (get_bits(instruction, 27, 26) ==  0x0 && get_bit(instruction, 4) == 0) {
+    } else if ((get_bits(instruction, 27, 25) == 0x0 &&
+                    (!get_bit(instruction, 4) ||
+                         (!get_bit(instruction, 7) && get_bit(instruction, 4)))) ||
+               (get_bits(instruction, 27, 25) == 0x1)) {
         // DATA PROCESSING INSTRUCTIONS
         enum DataProcOpcode opcode = get_bits(instruction, 24, 21);
         switch (opcode) {
@@ -92,8 +95,7 @@ static void decode_and_exec(uint32_t instruction)
         }
     } else if (get_bits(instruction, 27, 24) == 0xf) { // SWI
         exec_SWI(instruction);
-    } else if (get_bits(instruction, 27, 24) == 0x0 && 
-            get_bits(instruction, 7, 4) == 0x9 && get_bits(instruction, 31, 28) != 0xF) {
+    } else if (get_bits(instruction, 27, 24) == 0x0 && get_bits(instruction, 7, 4) == 0x9) {
         // MULTIPLY INSTRUCTIONS
         if (get_bits(instruction, 23, 21) == 0x1) { // MLA
             exec_MLA(instruction);
