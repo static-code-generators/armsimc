@@ -84,13 +84,21 @@ static void decode_and_exec(uint32_t instruction)
         // DATA PROCESSING INSTRUCTIONS
         enum DataProcOpcode opcode = get_bits(instruction, 24, 21);
         switch (opcode) {
+            case OP_AND: exec_AND(instruction); break;
+            case OP_EOR: exec_EOR(instruction); break;
+            case OP_SUB: exec_SUB(instruction); break;
+            case OP_RSB: exec_RSB(instruction); break;
+            case OP_ADD: exec_ADD(instruction); break;
+            case OP_ADC: exec_ADC(instruction); break;
+            case OP_SBC: exec_SBC(instruction); break;
             case OP_RSC: exec_RSC(instruction); break;
+            case OP_TST: exec_TST(instruction); break;
+            case OP_TEQ: exec_TEQ(instruction); break;
             case OP_CMP: exec_CMP(instruction); break;
             case OP_CMN: exec_CMN(instruction); break;
-            case OP_EOR: exec_EOR(instruction); break;
             case OP_ORR: exec_ORR(instruction); break;
-            case OP_TST: exec_TST(instruction); break;
             case OP_MOV: exec_MOV(instruction); break;
+            case OP_BIC: exec_BIC(instruction); break;
             case OP_MVN: exec_MVN(instruction); break;
         }
     } else if (get_bits(instruction, 27, 24) == 0xf) { // SWI
