@@ -347,7 +347,6 @@ static void exec_SUB(uint32_t instruction)
     }
 }
 
-<<<<<<< 7d4c0f5371144fcde4984c736569dbc163f1eeac
 static void exec_TEQ(uint32_t instruction)
 {
 
