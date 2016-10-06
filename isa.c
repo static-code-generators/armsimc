@@ -77,7 +77,7 @@ static void decode_and_exec(uint32_t instruction)
                 exec_STRB(instruction);
             }
         }
-    } else if (get_bits(instruction, 27, 26) ==  0x0) {
+    } else if (get_bits(instruction, 27, 26) ==  0x0 && get_bit(instruction, 4) == 0) {
         // DATA PROCESSING INSTRUCTIONS
         enum DataProcOpcode opcode = get_bits(instruction, 24, 21);
         switch (opcode) {
@@ -382,11 +382,9 @@ static void exec_SBC(uint32_t instruction)
 
 static void exec_LDRB(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint8_t data = mem_read_8(ld_str_addr_mode(curr_state, &(next_state), instruction));
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        next_state.regs[rd_id] = data; // casting uint8_t to uint32_t zeros top 3 bytes on its own; done to store byte to LSB of rd_id
-    }
+    uint8_t data = mem_read_8(ld_str_addr_mode(curr_state, &(next_state), instruction));
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    next_state.regs[rd_id] = data; // casting uint8_t to uint32_t zeros top 3 bytes on its own; done to store byte to LSB of rd_id
 }
 
 // Multiply and Multiply-Accumulate Instructions
@@ -396,69 +394,61 @@ static void exec_LDRB(uint32_t instruction)
 // So we can use the MUL and MLA ops unchanged for signed and unsigned operands.
 static void exec_MUL(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t rd_id = get_bits(instruction, 19, 16);
-        uint32_t rs_id = get_bits(instruction, 11, 8);
-        uint32_t rm_id = get_bits(instruction, 3, 0);
+    uint32_t rd_id = get_bits(instruction, 19, 16);
+    uint32_t rs_id = get_bits(instruction, 11, 8);
+    uint32_t rm_id = get_bits(instruction, 3, 0);
 
-        uint32_t result = curr_state.regs[rm_id] * curr_state.regs[rs_id]; // we don't care about overflows; no need to set C(arry) flag
-        next_state.regs[rd_id] = result;
-        
-        if (get_bit(instruction, S_BIT)) {
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
-        }
+    uint32_t result = curr_state.regs[rm_id] * curr_state.regs[rs_id]; // we don't care about overflows; no need to set C(arry) flag
+    next_state.regs[rd_id] = result;
+    
+    if (get_bit(instruction, S_BIT)) {
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
     }
 }
 
 static void exec_MLA(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t rd_id = get_bits(instruction, 19, 16);
-        uint32_t rn_id = get_bits(instruction, 15, 12);
-        uint32_t rs_id = get_bits(instruction, 11, 8);
-        uint32_t rm_id = get_bits(instruction, 3, 0);
+    uint32_t rd_id = get_bits(instruction, 19, 16);
+    uint32_t rn_id = get_bits(instruction, 15, 12);
+    uint32_t rs_id = get_bits(instruction, 11, 8);
+    uint32_t rm_id = get_bits(instruction, 3, 0);
 
-        uint32_t result = (curr_state.regs[rm_id] * curr_state.regs[rs_id]) + curr_state.regs[rn_id]; // we don't care about overflows; no need to set C(arry) flag
-        next_state.regs[rd_id] = result;
-        
-        if (get_bit(instruction, S_BIT)) {
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
-        }
+    uint32_t result = (curr_state.regs[rm_id] * curr_state.regs[rs_id]) + curr_state.regs[rn_id]; // we don't care about overflows; no need to set C(arry) flag
+    next_state.regs[rd_id] = result;
+    
+    if (get_bit(instruction, S_BIT)) {
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
     }
 }
 
 static void exec_MOV(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        struct ShifterOperand * shiftop;
-        shiftop = shifter_operand(curr_state, instruction);
-        uint32_t val = shiftop->shifter_operand;
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        curr_state.regs[rd_id] = val;
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint32_t val = shiftop->shifter_operand;
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    curr_state.regs[rd_id] = val;
 
-        if (get_bit(instruction, S_BIT)) {
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
-            set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
-        }
+    if (get_bit(instruction, S_BIT)) {
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+        set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
     }
 }
 
 static void exec_MVN(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        struct ShifterOperand * shiftop;
-        shiftop = shifter_operand(curr_state, instruction);
-        uint32_t val = ~(shiftop->shifter_operand) & 0xFFFFFFFF; // bitwise negation promotes result to (int); bitwise and-ing done to prevent this
-        uint32_t rd_id = get_bits(instruction, 15, 12);
-        curr_state.regs[rd_id] = val;
+    struct ShifterOperand * shiftop;
+    shiftop = shifter_operand(curr_state, instruction);
+    uint32_t val = ~(shiftop->shifter_operand) & 0xFFFFFFFF; // bitwise negation promotes result to (int); bitwise and-ing done to prevent this
+    uint32_t rd_id = get_bits(instruction, 15, 12);
+    curr_state.regs[rd_id] = val;
 
-        if (get_bit(instruction, S_BIT)) {
-            set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
-            set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
-            set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
-        }
+    if (get_bit(instruction, S_BIT)) {
+        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
+        set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+        set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
     }
 }
