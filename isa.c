@@ -401,8 +401,8 @@ static void exec_MUL(uint32_t instruction)
     next_state.regs[rd_id] = result;
     
     if (get_bit(instruction, S_BIT)) {
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
+        set_bit(&(next_state.CPSR), CPSR_N, get_bit(result, 31));
+        set_bit(&(next_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
     }
 }
 
@@ -417,8 +417,8 @@ static void exec_MLA(uint32_t instruction)
     next_state.regs[rd_id] = result;
     
     if (get_bit(instruction, S_BIT)) {
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(result, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
+        set_bit(&(next_state.CPSR), CPSR_N, get_bit(result, 31));
+        set_bit(&(next_state.CPSR), CPSR_Z, ((result) ? 0 : 1));
     }
 }
 
@@ -431,9 +431,9 @@ static void exec_MOV(uint32_t instruction)
     curr_state.regs[rd_id] = val;
 
     if (get_bit(instruction, S_BIT)) {
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
-        set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
+        set_bit(&(next_state.CPSR), CPSR_N, get_bit(val, 31));
+        set_bit(&(next_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+        set_bit(&(next_state.CPSR), CPSR_C, shiftop->shifter_carry);
     }
 }
 
@@ -446,8 +446,8 @@ static void exec_MVN(uint32_t instruction)
     curr_state.regs[rd_id] = val;
 
     if (get_bit(instruction, S_BIT)) {
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(val, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
-        set_bit(&(curr_state.CPSR), CPSR_C, shiftop->shifter_carry);
+        set_bit(&(next_state.CPSR), CPSR_N, get_bit(val, 31));
+        set_bit(&(next_state.CPSR), CPSR_Z, ((val) ? 0 : 1));
+        set_bit(&(next_state.CPSR), CPSR_C, shiftop->shifter_carry);
     }
 }
