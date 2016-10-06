@@ -1,5 +1,6 @@
 #include "isa_helper.h"
 #include "isa.h"
+#include "sim.h"
 
 enum DataProcOpcode {
     OP_AND, OP_EOR, OP_SUB, OP_RSB,
