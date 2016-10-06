@@ -26,6 +26,7 @@ void cmd_file(char *fname)
     initialize();
     load_program(fp);
     initialized = 1;
+    printf("Loaded file %s into memory\n", fname);
     fclose(fp);
 }
 

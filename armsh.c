@@ -104,10 +104,16 @@ int parse_and_exec(char *cmdstr)
     return EXIT_SUCCESS;
 }
 
-int shell_loop()
+int main(int argc, char *argv[])
 {
     char cmdstr[100];
     int ret;
+    if (argc == 2) {
+        cmd_file(argv[1]);
+    }
+    if (argc > 2) {
+        fprintf(stderr, "Wrong number of args. Run as %s [hex_file]\n", argv[0]);
+    }
     while (1) {
         printf("armsh> ");
         if (fgets(cmdstr, 100, stdin) == NULL) {
@@ -118,10 +124,3 @@ int shell_loop()
         }
     }
 }
-
-int main(int argc, char *argv[])
-{
-    int ret = shell_loop();
-    return ret;
-}
-
