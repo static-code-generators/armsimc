@@ -83,6 +83,11 @@ void cmd_rdump(char *fname)
     }
     fprintf(fp, "    PC: %08x\n", state.regs[15]);
     fprintf(fp, "  CPSR: %08x\n", state.CPSR);
+    fprintf(fp, "  (N: %d, Z: %d, C: %d, V: %d)\n",
+                 (state.CPSR >> CPSR_N) & 1,
+                 (state.CPSR >> CPSR_Z) & 1,
+                 (state.CPSR >> CPSR_C) & 1,
+                 (state.CPSR >> CPSR_V) & 1);
     if (fp != stdout) {
         fclose(fp);
     }

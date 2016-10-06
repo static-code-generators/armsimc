@@ -8,7 +8,11 @@
 
 #define PC 15
 #define LR 14
+
+#define CPSR_N 31
+#define CPSR_Z 30
 #define CPSR_C 29
+#define CPSR_V 28
 
 struct CPUState {
     uint32_t regs[NB_REGS]; ///> Register File

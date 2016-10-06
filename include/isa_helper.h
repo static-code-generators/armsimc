@@ -6,11 +6,6 @@
 #include <limits.h>
 #include "sim.h"
 
-#define CPSR_N 31
-#define CPSR_Z 30
-#define CPSR_C 29
-#define CPSR_V 28
-
 #define S_BIT 20
 
 #define L_BIT 20
