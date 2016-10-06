@@ -1,12 +1,6 @@
 #include "isa_helper.h"
 #include "isa.h"
 
-/* Instructions to implement:
- * ADC ADD AND B BIC
- * BL CMN CMP EOR LDR
- * LDRB MLA MOV MUL MVN
- * ORR RSB RSC SBC STR STRB SUB TEQ TST SWI */
-
 enum DataProcOpcode {
     OP_AND, OP_EOR, OP_SUB, OP_RSB,
     OP_ADD, OP_ADC, OP_SBC, OP_RSC,
@@ -18,10 +12,10 @@ static void decode_and_exec(uint32_t instruction);
 static void exec_ADC(uint32_t instruction);
 static void exec_ADD(uint32_t instruction);
 static void exec_AND(uint32_t instruction);
-static void exec_B(uint32_t instruction);
 static void exec_BIC(uint32_t instruction);
 static void exec_LDR(uint32_t instruction);
 static void exec_STR(uint32_t instruction);
+static void exec_LDRB(uint32_t instruction);
 static void exec_STRB(uint32_t instruction);
 static void exec_SWI(uint32_t instruction);
 static void exec_RSC(uint32_t instruction);
@@ -35,7 +29,6 @@ static void exec_RSB(uint32_t instruction);
 static void exec_SUB(uint32_t instruction);
 static void exec_TEQ(uint32_t instruction);
 static void exec_SBC(uint32_t instruction);
-static void exec_LDRB(uint32_t instruction);
 static void exec_MUL(uint32_t instruction);
 static void exec_MLA(uint32_t instruction);
 static void exec_MOV(uint32_t instruction);
@@ -110,6 +103,9 @@ static void decode_and_exec(uint32_t instruction)
         } else if (get_bits(instruction, 23, 21) == 0x0) { // MUL
             exec_MUL(instruction);
         }
+    } else if (get_bits(instruction, 27, 25) == 0x5) {
+        // BRANCH (optionally with LINK)
+        exec_BL(instruction);
     }
 }
 
