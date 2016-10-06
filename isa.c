@@ -316,9 +316,15 @@ static void exec_BL(uint32_t instruction)
     uint32_t immed_24 = get_bits(instruction, 23, 0);
     uint8_t L = get_bit(instruction, 24);
     if (L == 1) {
+        // addr of instruction next to B{L} instruction stored in link reg (r14)
         next_state.regs[LR] = curr_state.regs[PC] + 4;
     }
-    next_state.regs[PC] += (int32_t)(sign_extend(immed_24, 24, 30) << 2);
+    // value in PC acc. to arm_arm pg A4-10 is <curr_instruction_address + 8>
+    // we store current_instruction_address in PC instead
+    // also we unconditionally update PC to PC + 4 in process_instruction
+    // thus for us offset = given_offset + 8 - 4 = given_offset + 4
+    int32_t offset = (int32_t)(sign_extend(immed_24, 24, 30) << 2) + 4;
+    next_state.regs[PC] += offset;
 }
 
 static void exec_RSB(uint32_t instruction)
