@@ -5,9 +5,7 @@
  * ADC ADD AND B BIC
  * BL CMN CMP EOR LDR
  * LDRB MLA MOV MUL MVN
- * ORR RSB RSC SBC STR
- * STRB SUB TEQ TST SWI
- */
+ * ORR RSB RSC SBC STR STRB SUB TEQ TST SWI */
 
 enum DataProcOpcode {
     OP_AND, OP_EOR, OP_SUB, OP_RSB,
@@ -291,26 +289,14 @@ static void exec_BIC(uint32_t instruction)
     }
 }
 
-static void exec_B(uint32_t instruction)
-{
-    uint8_t signed_immed_24 = get_bits(instruction, 23, 0);
-    if (get_bit(instruction, L_BIT) == 1){
-        next_state.regs[LR] = curr_state.regs[PC] + 4;
-        // address of instruction after the branch instruction stored in LR
-    }
-    next_state.regs[PC] = curr_state.regs[PC] + (int32_t)(sign_extend(signed_immed_24, 24, 30) << 2);
-}
-
 static void exec_BL(uint32_t instruction)
 {
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t immed_24 = get_bits(instruction, 23, 0);
-        uint8_t L = get_bit(instruction, 24);
-        if (L == 1) {
-            next_state.regs[LR] = curr_state.regs[PC] + 4;
-        }
-        next_state.regs[PC] += (int32_t)(sign_extend(immed_24, 24, 30) << 2);
+    uint32_t immed_24 = get_bits(instruction, 23, 0);
+    uint8_t L = get_bit(instruction, 24);
+    if (L == 1) {
+        next_state.regs[LR] = curr_state.regs[PC] + 4;
     }
+    next_state.regs[PC] += (int32_t)(sign_extend(immed_24, 24, 30) << 2);
 }
 
 static void exec_RSB(uint32_t instruction)
@@ -320,14 +306,12 @@ static void exec_RSB(uint32_t instruction)
     uint8_t Rdi = get_bits(instruction, 15, 12);
     uint8_t Rni = get_bits(instruction, 19, 16);
     uint8_t S = get_bit(instruction, 20);
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        next_state.regs[Rdi] = shiftop->shifter_operand - curr_state.regs[Rni];
-        if (S == 1) { //ignore the SPSR crap.
-            set_bit(&next_state.CPSR, CPSR_N, get_bit(next_state.regs[Rdi], 31));
-            set_bit(&next_state.CPSR, CPSR_Z, !next_state.regs[Rdi]);
-            set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(shiftop->shifter_operand, curr_state.regs[Rni]));
-            set_bit(&(curr_state.CPSR), CPSR_V, !check_overflow(shiftop->shifter_operand, -curr_state.regs[Rni]));
-        }
+    next_state.regs[Rdi] = shiftop->shifter_operand - curr_state.regs[Rni];
+    if (S == 1) { //ignore the SPSR crap.
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(curr_state.regs[Rdi], 31));
+        set_bit(&next_state.CPSR, CPSR_Z, !curr_state.regs[Rdi]);
+        set_bit(&(next_state.CPSR), CPSR_C, !check_sub_borrow(shiftop->shifter_operand, curr_state.regs[Rni]));
+        set_bit(&(next_state.CPSR), CPSR_V, check_overflow(shiftop->shifter_operand, -curr_state.regs[Rni]));
     }
 }
 
@@ -338,14 +322,12 @@ static void exec_SUB(uint32_t instruction)
     uint8_t Rdi = get_bits(instruction, 15, 12);
     uint8_t Rni = get_bits(instruction, 19, 16);
     uint8_t S = get_bit(instruction, 20);
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        next_state.regs[Rdi] = curr_state.regs[Rni] - shiftop->shifter_operand;
-        if (S == 1) { //ignore the SPSR crap.
-            set_bit(&next_state.CPSR, CPSR_N, get_bit(next_state.regs[Rdi], 31));
-            set_bit(&next_state.CPSR, CPSR_Z, !next_state.regs[Rdi]);
-            set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand));
-            set_bit(&(curr_state.CPSR), CPSR_V, !check_overflow(curr_state.regs[Rni], -shiftop->shifter_operand));
-        }
+    next_state.regs[Rdi] = curr_state.regs[Rni] - shiftop->shifter_operand;
+    if (S == 1) { //ignore the SPSR crap.
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(curr_state.regs[Rdi], 31));
+        set_bit(&next_state.CPSR, CPSR_Z, !curr_state.regs[Rdi]);
+        set_bit(&(next_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand));
+        set_bit(&(next_state.CPSR), CPSR_V, check_overflow(curr_state.regs[Rni], -shiftop->shifter_operand));
     }
 }
 
@@ -357,14 +339,12 @@ static void exec_TEQ(uint32_t instruction)
     uint32_t op1 = curr_state.regs[Rn_addr];
     uint32_t op2 = shifter_op->shifter_operand;
 
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        uint32_t alu_out = op1 ^ op2;
+    uint32_t alu_out = op1 ^ op2;
 
-        set_bit(&(curr_state.CPSR), CPSR_N, get_bit(alu_out, 31));
-        set_bit(&(curr_state.CPSR), CPSR_Z, !alu_out);
-        set_bit(&(curr_state.CPSR), CPSR_C, shifter_op->shifter_carry);
-        //VFlag unaffected.
-    }
+    set_bit(&(next_state.CPSR), CPSR_N, get_bit(alu_out, 31));
+    set_bit(&(next_state.CPSR), CPSR_Z, !alu_out);
+    set_bit(&(next_state.CPSR), CPSR_C, shifter_op->shifter_carry);
+    //VFlag unaffected.
 }
 
 static void exec_SBC(uint32_t instruction)
@@ -374,13 +354,11 @@ static void exec_SBC(uint32_t instruction)
     uint8_t Rdi = get_bits(instruction, 15, 12);
     uint8_t Rni = get_bits(instruction, 19, 16);
     uint8_t S = get_bit(instruction, 20);
-    if (condition_check(curr_state, get_bits(instruction, 31, 28))) {
-        next_state.regs[Rdi] = curr_state.regs[Rni] - shiftop->shifter_operand - !get_bit(curr_state.CPSR, CPSR_C);
-        if (S == 1) { //ignore the SPSR crap.
-            set_bit(&next_state.CPSR, CPSR_N, get_bit(next_state.regs[Rdi], 31));
-            set_bit(&next_state.CPSR, CPSR_Z, !next_state.regs[Rdi]);
-            set_bit(&(curr_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C)));
-            set_bit(&(curr_state.CPSR), CPSR_V, !check_overflow(curr_state.regs[Rni], -(shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C))));
-        }
+    next_state.regs[Rdi] = curr_state.regs[Rni] - shiftop->shifter_operand - !get_bit(curr_state.CPSR, CPSR_C);
+    if (S == 1) { //ignore the SPSR crap.
+        set_bit(&next_state.CPSR, CPSR_N, get_bit(curr_state.regs[Rdi], 31));
+        set_bit(&next_state.CPSR, CPSR_Z, !curr_state.regs[Rdi]);
+        set_bit(&(next_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C)));
+        set_bit(&(next_state.CPSR), CPSR_V, check_overflow(curr_state.regs[Rni], -(shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C))));
     }
 }
