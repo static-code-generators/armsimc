@@ -210,7 +210,7 @@ uint32_t ld_str_addr_mode(struct CPUState curr_state,
     uint8_t rn_id = (instruction >> 16) & 0xf; // bits 19-16
     int32_t rn_val = curr_state.regs[rn_id];
 
-    if (instruction & (1 << I_BIT)) { // Immediate offset
+    if (get_bit(instruction, I_BIT) == 0) { // Immediate offset
         offset = instruction & 0x7ff; // bits 11-0
     } else { // Register offset
         uint8_t rm_id = instruction & 0xf; // bits 3-0
