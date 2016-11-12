@@ -196,7 +196,7 @@ static void exec_RSC(uint32_t instruction)
         set_bit(&next_state.CPSR, CPSR_C,
                 !check_sub_borrow(shiftop->shifter_operand, rn_val + !carry)); // c = !b
         set_bit(&next_state.CPSR, CPSR_V,
-                check_overflow(shiftop->shifter_operand, -(rn_val + !carry)));
+                check_overflow(shiftop->shifter_operand, -rn_val));
     }
 }
 
@@ -255,7 +255,7 @@ static void exec_ADC(uint32_t instruction)
         set_bit(&next_state.CPSR, CPSR_C,
                 check_add_carry(rn_val, shiftop->shifter_operand + carry));
         set_bit(&next_state.CPSR, CPSR_V,
-                check_overflow(rn_val, shiftop->shifter_operand + carry));
+                check_overflow(rn_val, shiftop->shifter_operand));
     }
 }
 
@@ -388,7 +388,7 @@ static void exec_SBC(uint32_t instruction)
         set_bit(&next_state.CPSR, CPSR_N, get_bit(curr_state.regs[Rdi], 31));
         set_bit(&next_state.CPSR, CPSR_Z, !curr_state.regs[Rdi]);
         set_bit(&(next_state.CPSR), CPSR_C, !check_sub_borrow(curr_state.regs[Rni], shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C)));
-        set_bit(&(next_state.CPSR), CPSR_V, check_overflow(curr_state.regs[Rni], -(shiftop->shifter_operand + !get_bit(curr_state.CPSR, CPSR_C))));
+        set_bit(&(next_state.CPSR), CPSR_V, check_overflow(curr_state.regs[Rni], -shiftop->shifter_operand));
     }
 }
 
