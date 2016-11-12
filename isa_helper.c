@@ -413,7 +413,7 @@ bool condition_check(struct CPUState curr_state, uint8_t cond)
         case LE: 
             {
                 return ( 
-                        ( (curr_state.CPSR & (1 << CPSR_Z)) ) && 
+                        ( (curr_state.CPSR & (1 << CPSR_Z)) ) || 
                         ( ( !(curr_state.CPSR & (1 << CPSR_N)) && (curr_state.CPSR & (1 << CPSR_V)) ) || ( (curr_state.CPSR & (1 << CPSR_N)) && !(curr_state.CPSR & (1 << CPSR_V)) ) )
                        );
                 break;
